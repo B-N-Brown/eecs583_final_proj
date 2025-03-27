@@ -1,21 +1,28 @@
-from compiler_gym.envs.llvm import LlvmEnv, LlvmReward
+from compiler_gym.spaces import Reward
 
-class RuntimeImprovementReward(LlvmReward):
+class RuntimeReward(Reward):
+    """An example reward that uses changes in the "runtime" observation value
+    to compute incremental reward.
+    """
+
+    baseline_runtime: int
+
     def __init__(self):
-        super().__init__()
-        self.last_runtime = None
+        super().__init__(
+            name="runtime",
+            observation_spaces=["runtime"],
+            default_value=0,
+            default_negates_returns=True,
+            deterministic=False,
+            platform_dependent=True,
+        )
+        self.baseline_runtime = 0
 
-    def reset(self, env: LlvmEnv):
-        # Initialize or reset state when the env resets
-        self.last_runtime = env.observation["runtime"]
+    def reset(self, benchmark: str, observation_view):
+        del benchmark  # unused
+        self.baseline_runtime = observation_view["runtime"]
 
-    def __call__(self, env: LlvmEnv) -> float:
-        current_runtime = env.observation["runtime"]
-        if self.last_runtime is None:
-            return 0.0
-        reward = self.last_runtime - current_runtime
-        self.last_runtime = current_runtime
-        return reward
-
-    def close(self):
-        pass
+    def update(self, action, observations, observation_view):
+        del action  # unused
+        del observation_view  # unused
+        return float(self.baseline_runtime - observations[0]) / self.baseline_runtime
