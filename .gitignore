@@ -1,2 +1,3 @@
 secrets.mk
 .venv
+__pycache__

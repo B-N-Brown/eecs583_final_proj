@@ -1,21 +1,19 @@
-from compiler_gym.envs.llvm import LlvmEnv, LlvmReward
+from compiler_gym.wrappers import RewardWrapper
 
-class RuntimeImprovementReward(LlvmReward):
-    def __init__(self):
-        super().__init__()
+class RuntimeImprovementWrapper(RewardWrapper):
+    def __init__(self, env):
+        super().__init__(env)
         self.last_runtime = None
 
-    def reset(self, env: LlvmEnv):
-        # Initialize or reset state when the env resets
-        self.last_runtime = env.observation["runtime"]
+    def reset(self, **kwargs):
+        obs = self.env.reset(**kwargs)
+        self.last_runtime = self.env.observation["Runtime"]
+        return obs
 
-    def __call__(self, env: LlvmEnv) -> float:
-        current_runtime = env.observation["runtime"]
+    def convert_reward(self, reward):  # required by CompilerGym's RewardWrapper
+        current_runtime = self.env.observation["Runtime"]
         if self.last_runtime is None:
             return 0.0
-        reward = self.last_runtime - current_runtime
+        reward = self.last_runtime - current_runtime  # reward improvement
         self.last_runtime = current_runtime
         return reward
-
-    def close(self):
-        pass
