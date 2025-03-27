@@ -14,12 +14,20 @@ env = compiler_gym.make(
     reward_space="IrInstructionCountOz",
 )
 # starts a new compilation session
-env.reset()
+observation = env.reset()
+print("observation: ", observation)
+print()
 # prints the IR of the program
 env.render()
 # applies a random optimization, updates state/reward/actions
-env.step(env.action_space.sample())
+observation, reward, done, info = env.step(env.action_space.sample())
 # this is what will run a custom action space: env.action_space["loop-unroll"]
+print("observation: ", observation)
+print("reward: ", reward)
+print("done: ", done)
+print("info: ", info)
+
+print()
 
 # closes the environment, freeing resources
 env.close()
