@@ -4,8 +4,11 @@
 # SETUP:
 
 ## Environment (version 3.11.2)
-# For some reason I had to install this
+### For some reason I had to install this (Debian)
 sudo apt-get install libtinfo5
+
+### (MAC)
+brew install libtinfo5
 
 python3 -m venv env
 pip3 install -r requirements.txt

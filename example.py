@@ -16,7 +16,7 @@ with compiler_gym.make(
     observation_space="features",
     reward_space="runtime",
 ) as env:
-    compiler_gym.set_debug_level(4)  # TODO: check why this has no effect
+    compiler_gym.set_debug_level(3)  # TODO: check why this has no effect
 
     observation = env.reset()
     print("observation: ", observation)
