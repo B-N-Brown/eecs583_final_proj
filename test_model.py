@@ -1,28 +1,9 @@
 import gym
 import compiler_gym
 import numpy as np
-from runtime_reward import RuntimeImprovementWrapper
+from compiler_gym.wrappers import RewardWrapper
 
-
-class RuntimeImprovementWrapper(RewardWrapper):
-    def __init__(self, env):
-        super().__init__(env)
-        self.last_runtime = 0.0
-
-    def reset(self, **kwargs):
-        obs = self.env.reset(**kwargs)
-        # Get the initial runtime
-        self.last_runtime = self.env.observation["Runtime"]
-        return obs
-
-    def reward(self, reward):  # required method
-        # Get current runtime
-        current_runtime = self.env.observation["Runtime"]
-        if self.last_runtime is None or current_runtime is None:
-            return 0.0
-        reward = self.last_runtime - current_runtime
-        self.last_runtime = current_runtime
-        return reward
+from runtime_reward import *
 
 
 # creates a new environment (same as gym.make)
@@ -30,15 +11,20 @@ class RuntimeImprovementWrapper(RewardWrapper):
 # selects the program to compile
 # selects the observation space
 # selects the optimization target
+
+print(compiler_gym.COMPILER_GYM_ENVS)
+
 env = compiler_gym.make(
     "llvm-v0",
     benchmark="cbench-v1/qsort", # the data set for HLS: benchmark://chstone-v0
     observation_space="Autophase",
-    reward_space="IrInstructionCountOz", #Dummy
+    reward_space=RuntimeImprovementWrapper(),
 )
 
 # line added to implement custom reward
-env = RuntimeImprovementWrapper(env)
+# env = RuntimeImprovementWrapper(env)
+
+print("ACTION SPACE: ", env.observation.spaces["Autophase"].space)
 
 action_spaces = [ env.action_space["-loop-unroll"],  env.action_space["-loop-reroll"]]
 
