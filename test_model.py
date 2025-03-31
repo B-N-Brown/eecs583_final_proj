@@ -14,6 +14,8 @@ from runtime_reward import *
 
 print(compiler_gym.COMPILER_GYM_ENVS)
 
+print("DIE")
+
 env = compiler_gym.make(
     "llvm-v0",
     benchmark="cbench-v1/qsort", # the data set for HLS: benchmark://chstone-v0

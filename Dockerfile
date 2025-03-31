@@ -7,8 +7,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip \
+    python3-venv \
     libtinfo5 \
     && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv env
+
+ENV PATH="/env/bin:$PATH"
 
 # Set working directory inside the container
 WORKDIR /app
@@ -20,7 +25,7 @@ COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the project files into the container
-COPY . ./
+COPY . .
 
 # Default command to keep the container running
 CMD ["tail", "-f", "/dev/null"]
