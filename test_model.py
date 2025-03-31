@@ -18,11 +18,11 @@ env = compiler_gym.make(
     "llvm-v0",
     benchmark="cbench-v1/qsort", # the data set for HLS: benchmark://chstone-v0
     observation_space="Autophase",
-    reward_space=RuntimeImprovementWrapper(),
+    reward_space="IrInstructionCountOz"
 )
 
 # line added to implement custom reward
-# env = RuntimeImprovementWrapper(env)
+env = RuntimeImprovementWrapper(env)
 
 print("ACTION SPACE: ", env.observation.spaces["Autophase"].space)
 

@@ -17,9 +17,9 @@ class RuntimeImprovementWrapper(RewardWrapper):
         self.last_runtime = self.env.observation["Runtime"]
         return obs
     
-    # def step(self, action):
-    #     observation, reward, done, info = self.env.step(action)
-    #     return observation, self.reward(reward), done, info 
+    def step(self, action):
+        observation, reward, done, info = self.env.step(action)
+        return observation, self.reward(reward), done, info 
 
     def reward(self, reward):  # required method
         # Get current runtime
