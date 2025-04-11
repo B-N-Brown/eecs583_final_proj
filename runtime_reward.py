@@ -18,6 +18,7 @@ class RuntimeImprovementWrapper(RewardWrapper):
         return obs
     
     def step(self, action):
+        # print(f"action from step: {action}")
         observation, reward, done, info = self.env.step(action)
         return observation, self.reward(reward), done, info 
 

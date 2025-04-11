@@ -1,6 +1,7 @@
 import gym
 import compiler_gym
 import numpy as np
+from tqdm import tqdm
 from compiler_gym.wrappers import RewardWrapper
 
 from runtime_reward import *
@@ -14,49 +15,81 @@ from runtime_reward import *
 
 print(compiler_gym.COMPILER_GYM_ENVS)
 
+# Checking out the dataset
+compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
 
+# Initialize environment
 env = compiler_gym.make(
     "llvm-v0",
-    benchmark="cbench-v1/qsort", # the data set for HLS: benchmark://chstone-v0
+    benchmark="cbench-v1/sha", # the data set for HLS: benchmark://chstone-v0
     observation_space="Autophase",
     reward_space="IrInstructionCountOz"
 )
-
 # line added to implement custom reward
 env = RuntimeImprovementWrapper(env)
+env.action_space.seed(42)
 
-# print("ACTION SPACE: ", env.observation.spaces["Autophase"].space)
 
 action_spaces = [ env.action_space["-loop-unroll"],  env.action_space["-loop-reroll"]]
-print(env.action_space["-loop-unroll"].space)
+print("ACTION SPACE:", env.action_space)
+print("OBSERVATION SPACE:", env.observation_space)
+
+
+print(env.action_space.from_string("-loop-unroll"))
+
+# exit()
+
+
+# GYM style training loop
+n_episodes = 5
+# env = gym.wrappers.RecordEpisodeStatistics(env, n_episodes)
+env.reset()
+done = False
+
+print(f"AUTOPHASE DICTIONARY 0: {env.observation['AutophaseDict']['TotalInsts']}")
+for episode in tqdm(range(n_episodes)):
+    env.reset()
+
+    with tqdm(desc="Processing") as pbar:
+        tqdm_counter = 0
+        while not done:
+            action = env.action_space.sample()  # agent policy that uses the observation and info
+            action = env.action_space["-loop-unroll"]
+
+            # print("SAMPLD ACTION:", env.action_space.to_string(action))
+            observation, reward, done, info = env.step(action)
+            # observation, reward, terminated, truncated, info = env.step(action)
+
+            # done = terminated or truncated
+
+            if not info['action_had_no_effect']:
+                print("SUCCESS")
+
+            # print("_______________________________________")
+            # print("observation: ", observation)
+            # print("reward: ", reward)
+            # print("done: ", done)
+            # print("info: ", info)
+            # print(f"AUTOPHASE TOTAL INSTR ROUND : {env.observation['AutophaseDict']['TotalInsts']}")
+            # print("CHAT HELP ME :", env.observation["IrInstructionCountOz"])
+            # print("_______________________________________")
+
+            tqdm_counter += 1
+            pbar.update(1)
+        
+        # exit()
+
+
+env.close()
+
+exit()
 
 # starts a new compilation session
 observation = env.reset()
 # print("observation: ", observation)
 # print()
 # prints the IR of the program
-#env.render()
-
-MAX_EPOCHS = 2 
-DISCOUNT_FACTOR = 0.99
-N_TRIALS = 25
-REWARD_THRESHOLD = 10 
-PRINT_INTERVAL = 10
-INPUT_DIM = env.observation_space.shape[0]
-HIDDEN_DIM = 128
-OUTPUT_DIM = env.action_space.n
-DROPOUT = 0.5
-LEARNING_RATE = 0.01
-for episode in range(1, MAX_EPOCHS+1):
-    observation, reward, done, info = env.step(action_spaces[0])
-    mean_episode_return = np.mean(reward)
-    print(info)
-    # env.render()
-    if episode % PRINT_INTERVAL == 0:
-        print(episode, "Reward:", mean_episode_return)
-    if mean_episode_return >= REWARD_THRESHOLD:
-        print(f'Reached reward threshold in {episode} episodes')
-        break
+# env.render()
 
 # # applies a random optimization, updates state/reward/actions
 # print("ACTION SPACE:", env.action_space.sample())
