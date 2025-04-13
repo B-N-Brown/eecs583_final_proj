@@ -4,7 +4,7 @@ import numpy as np
 from tqdm import tqdm
 from compiler_gym.wrappers import RewardWrapper
 
-from runtime_reward import *
+from runtime_reward import RuntimeImprovementWrapper
 
 
 # creates a new environment (same as gym.make)
@@ -16,12 +16,13 @@ from runtime_reward import *
 print(compiler_gym.COMPILER_GYM_ENVS)
 
 # Checking out the dataset
-compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
+# compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
+print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
 
 # Initialize environment
 env = compiler_gym.make(
     "llvm-v0",
-    benchmark="cbench-v1/sha", # the data set for HLS: benchmark://chstone-v0
+    benchmark="cbench-v1/sha", 
     observation_space="Autophase",
     reward_space="IrInstructionCountOz"
 )
@@ -41,7 +42,7 @@ print(env.action_space.from_string("-loop-unroll"))
 
 
 # GYM style training loop
-n_episodes = 5
+n_episodes = 1000 
 # env = gym.wrappers.RecordEpisodeStatistics(env, n_episodes)
 env.reset()
 done = False
@@ -54,16 +55,28 @@ for episode in tqdm(range(n_episodes)):
         tqdm_counter = 0
         while not done:
             action = env.action_space.sample()  # agent policy that uses the observation and info
-            action = env.action_space["-loop-unroll"]
+            # action = env.action_space["-loop-unroll"]
 
             # print("SAMPLD ACTION:", env.action_space.to_string(action))
+
+            instr_count_before = env.observation['AutophaseDict']['TotalInsts']
             observation, reward, done, info = env.step(action)
             # observation, reward, terminated, truncated, info = env.step(action)
 
             # done = terminated or truncated
 
-            if not info['action_had_no_effect']:
-                print("SUCCESS")
+            # if not info['action_had_no_effect']:
+            #     print("SUCCESS")
+            if env.action_space.to_string(action) == "-loop-unroll":
+                print("SUCCESS!!")
+                print("SAMPLD ACTION:", env.action_space.to_string(action))
+                print("info: ", info)
+                print("INSTR BEFORE", instr_count_before)
+                print(f"INSTR AFTER {env.observation['AutophaseDict']['TotalInsts']}")
+                break
+
+            # else:
+            #     break 
 
             # print("_______________________________________")
             # print("observation: ", observation)
