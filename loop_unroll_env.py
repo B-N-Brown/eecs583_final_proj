@@ -29,6 +29,7 @@ class LoopUnrollEnv(gym.Env):
             self.env.write_ir(passes=passes)
             reward = -self.env.observation["Runtime"]
         except Exception:
+            print(Exception)
             # Fallback if LLVM errors
             reward = -1e6
         obs = self.env.observation["Autophase"]
