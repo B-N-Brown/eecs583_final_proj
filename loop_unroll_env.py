@@ -6,13 +6,11 @@ import numpy as np
 class LoopUnrollEnv(gym.Env):
     def __init__(self):
         super().__init__()
-        self.env = compiler_gym.make("llvm-v0")
+        self.env = compiler_gym.make("llvm-v0",observation_space="autophase")
         self.env.reset()
         # Unroll factors to choose from
         self.unroll_factors = [2, 4, 8, 16]
         self.action_space = Discrete(len(self.unroll_factors), "unroll options")
-        # # We'll use static program features (autophase)
-        self.observation_space = Box(low=0, high=1e5, shape=(56,), dtype=np.float32, name="obs_space")
     def reset(self):
         self.env.reset()
         return self.env.observation["autophase"]
