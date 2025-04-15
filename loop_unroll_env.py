@@ -26,8 +26,9 @@ class LoopUnrollEnv(gym.Env):
             "-simplifycfg",
         ]
         try:
-            #self.env.write_ir(passes=passes)
-            self.env.step(passes)
+            self.env.apply(passes)
+            # self.env.write_ir(passes=passes)
+            # self.env.step(passes)
             reward = -self.env.observation["Runtime"]
         except Exception as e:
             print(e)
