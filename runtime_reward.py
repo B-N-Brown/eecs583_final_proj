@@ -20,9 +20,9 @@ class RuntimeImprovementWrapper(RewardWrapper):
     def step(self, action):
         # print(f"action from step: {action}")
         observation, reward, done, info = self.env.step(action)
-        return observation, self.reward(reward), done, info 
+        return observation, reward, done, info 
 
-    def reward(self, reward):  # required method
+    def convert_reward(self, reward):  # required method
         # Get current runtime
         current_runtime = self.env.observation["Runtime"]
         if self.last_runtime is None or current_runtime is None:

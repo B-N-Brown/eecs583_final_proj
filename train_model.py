@@ -28,7 +28,7 @@ print(env.action_space.from_string("-loop-unroll"))
 
 
 # GYM style training loop
-n_episodes = 1000 
+n_episodes = 10
 env.reset()
 done = False
 
