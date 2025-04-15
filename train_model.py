@@ -5,7 +5,7 @@ from runtime_reward import RuntimeImprovementWrapper
 
 # Checking out the dataset
 # compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
-print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
+#print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
 
 # Initialize environment
 env = compiler_gym.make(
@@ -20,11 +20,11 @@ env.action_space.seed(42)
 
 
 action_spaces = [ env.action_space["-loop-unroll"],  env.action_space["-loop-reroll"]]
-print("ACTION SPACE:", env.action_space)
-print("OBSERVATION SPACE:", env.observation_space)
+# print("ACTION SPACE:", env.action_space)
+# print("OBSERVATION SPACE:", env.observation_space)
 
 
-print(env.action_space.from_string("-loop-unroll"))
+# print(env.action_space.from_string("-loop-unroll"))
 
 
 # GYM style training loop
@@ -32,7 +32,7 @@ n_episodes = 10
 env.reset()
 done = False
 
-print(f"AUTOPHASE DICTIONARY 0: {env.observation['AutophaseDict']['TotalInsts']}")
+#print(f"AUTOPHASE DICTIONARY 0: {env.observation['AutophaseDict']['TotalInsts']}")
 for episode in tqdm(range(n_episodes)):
     env.reset()
 
@@ -43,7 +43,7 @@ for episode in tqdm(range(n_episodes)):
 
             instr_count_before = env.observation['AutophaseDict']['TotalInsts']
             observation, reward, done, info = env.step(action)
-
+            print("reward: ", reward)
             if env.action_space.to_string(action) == "-loop-unroll":
                 break
             tqdm_counter += 1
