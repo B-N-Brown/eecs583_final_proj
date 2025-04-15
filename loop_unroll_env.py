@@ -6,7 +6,7 @@ import numpy as np
 class LoopUnrollEnv(gym.Env):
     def __init__(self):
         super().__init__()
-        self.env = compiler_gym.make("llvm-v0", observation_space="autophase")
+        self.env = compiler_gym.make("llvm-v0", observation_space="Autophase")
         self.env.reset()
         # Unroll factors to choose from
         self.unroll_factors = [2, 4, 8, 16]
@@ -16,7 +16,7 @@ class LoopUnrollEnv(gym.Env):
 
     def reset(self):
         self.env.reset()
-        return self.env.observation["autophase"]
+        return self.env.observation["Autophase"]
     def step(self, action):
         unroll = self.unroll_factors[action]
         passes = [
@@ -27,10 +27,10 @@ class LoopUnrollEnv(gym.Env):
         ]
         try:
             self.env.write_ir(passes=passes)
-            reward = -self.env.observation["runtime"]
+            reward = -self.env.observation["Runtime"]
         except Exception:
             # Fallback if LLVM errors
             reward = -1e6
-        obs = self.env.observation["autophase"]
+        obs = self.env.observation["Autophase"]
         done = True
         return obs, reward, done, {"unroll_factor": unroll}
