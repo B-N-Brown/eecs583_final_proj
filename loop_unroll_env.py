@@ -27,15 +27,17 @@ class LoopUnrollEnv(gym.Env):
             "-unroll-allow-partial",
             "-simplifycfg",
         ]
-        try:
-            self.env.apply(passes)
-            # self.env.write_ir(passes=passes)
-            # self.env.step(passes)
-            reward = -self.env.observation["Runtime"]
-        except Exception as e:
-            print(e)
-            # Fallback if LLVM errors
-            reward = -1e6
+        # try:
+        #     self.env.apply(passes)
+        #     # self.env.write_ir(passes=passes)
+        #     # self.env.step(passes)
+        #     reward = -self.env.observation["Runtime"]
+        # except Exception as e:
+        #     print(e)
+        #     # Fallback if LLVM errors
+        #     reward = -1e6
+        self.env.apply(passes)
+        reward = -self.env.observation["Runtime"]
         obs = self.env.observation["Autophase"]
         done = True
         return obs, reward, done, {"unroll_factor": unroll}
