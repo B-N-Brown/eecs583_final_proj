@@ -6,4 +6,5 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 env = compiler_gym.make("llvm-v0")
+print("worked")
 env.reset()
