@@ -7,9 +7,9 @@ class LoopUnrollEnv(gym.Env):
     def __init__(self):
         super().__init__()
         self.env = compiler_gym.make("llvm-v0", observation_space="Autophase", benchmark="cbench-v1/sha")
+        self.env.reset()
         print("IR")
         print(self.env.ir)
-        self.env.reset()
         # Unroll factors to choose from
         self.unroll_factors = [2, 4, 8, 16]
         self.action_space = Discrete(len(self.unroll_factors), "unroll options")
