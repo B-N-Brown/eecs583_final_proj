@@ -7,6 +7,8 @@ class LoopUnrollEnv(gym.Env):
     def __init__(self):
         super().__init__()
         self.env = compiler_gym.make("llvm-v0", observation_space="Autophase")
+        print("benchmarks: ")
+        print(self.env.benchmarks)
         self.env.reset()
         # Unroll factors to choose from
         self.unroll_factors = [2, 4, 8, 16]
@@ -31,7 +33,7 @@ class LoopUnrollEnv(gym.Env):
             # self.env.step(passes)
             reward = -self.env.observation["Runtime"]
         except Exception as e:
-            print(e)
+            #print(e)
             # Fallback if LLVM errors
             reward = -1e6
         obs = self.env.observation["Autophase"]
