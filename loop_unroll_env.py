@@ -8,7 +8,7 @@ class LoopUnrollEnv(gym.Env):
         super().__init__()
         self.env = compiler_gym.make("llvm-v0", observation_space="Autophase")
         print("benchmarks: ")
-        print(self.env.benchmarks)
+        print(self.env.benchmark)
         self.env.reset()
         # Unroll factors to choose from
         self.unroll_factors = [2, 4, 8, 16]
