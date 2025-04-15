@@ -12,7 +12,7 @@ class LoopUnrollEnv(gym.Env):
         self.unroll_factors = [2, 4, 8, 16]
         self.action_space = Discrete(len(self.unroll_factors), "unroll options")
         # # We'll use static program features (autophase)
-        # self.observation_space = Box(low=0, high=1e5, shape=(56,), dtype=np.float32, name="obs_space")
+        self.observation_space = Box(low=0, high=1e5, shape=(56,), dtype=np.float32, name="obs_space")
     def reset(self):
         self.env.reset()
         return self.env.observation["autophase"]
