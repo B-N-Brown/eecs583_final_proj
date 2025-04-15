@@ -2,7 +2,7 @@ import compiler_gym
 from compiler_gym.spaces import Discrete, Box
 import numpy as np
 
-class LoopUnrollEnv(env):
+class LoopUnrollEnv(compiler_gym.env):
     def __init__(self):
         super().__init__()
         self.env = compiler_gym.make("llvm-v0")
