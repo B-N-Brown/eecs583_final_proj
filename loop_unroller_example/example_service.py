@@ -308,5 +308,4 @@ class UnrollingCompilationSession(CompilationSession):
 
 
 if __name__ == "__main__":
-    create_and_run_compiler_gym_service(UnrollingCompilationSession, 
-    service_socket_path='/tmp/my_loop_unroll.sock')
+    create_and_run_compiler_gym_service(UnrollingCompilationSession)
