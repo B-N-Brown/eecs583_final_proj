@@ -29,6 +29,8 @@ class RuntimeImprovementWrapper(RewardWrapper):
             return 0.0
         reward = self.last_runtime - current_runtime
         self.last_runtime = current_runtime
+
+        print("REWARD:", reward)
         return reward
     
 

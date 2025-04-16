@@ -1,9 +1,21 @@
 # Simple policy training script and makeshift environment sampling loop
+import gym
+import torch
 import compiler_gym
 from tqdm import tqdm
+from pprint import pprint
+from torch import optim
+
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
+import ray
+from ray.rllib.algorithms.ppo import PPOConfig
+from ray.tune.registry import register_env
+
 from runtime_reward import RuntimeImprovementWrapper
+from models.policy import PolicyNetwork
+
+from gymnasium.wrappers import EnvCompatibility
 
 
 def gym_training(env):
@@ -37,15 +49,16 @@ def gym_training(env):
 
     env.close()
 
-def ppo_training(env):
+# STABLE BASELINES TRAINING REGIMES
+def ppo_training_sb(env):
     # Create vectorized env (recommended for SB3)
     vec_env = make_vec_env(lambda: env, n_envs=1)
 
-    model = PPO("MlpPolicy", vec_env, verbose=1)
+    model = PPO("MlpPolicy", vec_env, verbose=1, batch_size=2)
     model.learn(total_timesteps=10000)
 
 
-def a2c_training(env):
+def a2c_training_sb(env):
     # Wrap in a vectorized env (required by SB3)
     vec_env = make_vec_env(lambda: env, n_envs=1)
 
@@ -58,6 +71,114 @@ def a2c_training(env):
 
     # Save or evaluate
     model.save("a2c_compilergym")
+
+# RLLib TRAINING REGIMES
+def env_creator(*args, **kwargs):
+    env = compiler_gym.make(
+        "llvm-v0",
+        benchmark="cbench-v1/sha", 
+        observation_space="Autophase",
+        reward_space="IrInstructionCountOz"
+    )
+    # line added to implement custom reward
+    env = RuntimeImprovementWrapper(env)
+    # env = EnvCompatibility(env)
+    seed = 42
+    env.action_space.seed(seed)
+
+    return env
+
+def ppo_training_rllib():
+    register_env("compiler_gym_env", env_creator)
+
+    env = env_creator()
+    ray.rllib.utils.check_env(env)
+
+    ray.init(ignore_reinit_error=True)
+
+    # Configure the algorithm.
+    config = (
+        PPOConfig()
+        .environment(
+            "compiler_gym_env",
+            disable_env_checking=True,
+            env_config={}
+        )
+    )
+
+    algo = config.build()
+    for _ in range(10):
+        pprint(algo.train())
+
+
+    algo.stop()
+
+# TRAINING THE LOOONG WAY
+def select_action(policy_net, state):
+    state = torch.FloatTensor(state).unsqueeze(0)
+    probs = policy_net(state)
+    dist = torch.distributions.Categorical(probs)
+    action = dist.sample()
+    return action.item(), dist.log_prob(action)
+
+def compute_returns(rewards, gamma=0.99):
+    returns = []
+    R = 0
+    for r in reversed(rewards):
+        R = r + gamma * R
+        returns.insert(0, R)
+    return returns
+
+def basic_train(env, checkpoint_name="basic_model.pth", episodes=50, gamma=0.99, lr=1e-2):
+    state_dim = env.observation_space.shape[0]
+    action_dim = env.action_space.n
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("USING DEVICE:", device)
+
+    policy_net = PolicyNetwork(state_dim, action_dim).to(device)
+    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
+
+    for episode in tqdm(range(episodes)):
+        state = env.reset()
+        state = torch.from_numpy(state).to(device)
+
+        log_probs = []
+        rewards = []
+
+        with tqdm(desc="Processing") as pbar:
+            tqdm_counter = 0
+
+            done = False
+            while not done:
+                action, log_prob = select_action(policy_net, state)
+                next_state, reward, done, _ = env.step(action)
+
+                log_probs.append(log_prob)
+                rewards.append(reward)
+                state = next_state
+
+                tqdm_counter += 1
+                pbar.update(tqdm_counter)
+
+        returns = compute_returns(rewards, gamma)
+        returns = torch.tensor(returns)
+        returns = (returns - returns.mean()) / (returns.std() + 1e-8)
+
+        loss = -torch.sum(torch.stack(log_probs) * returns)
+
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
+        total_reward = sum(rewards)
+        print(f"Episode {episode}, total reward: {total_reward}")
+
+    torch.save(f"model_checkpoints/{checkpoint_name}")
+    env.close()
+
+def basic_eval(env, checkpoint_name="basic_model.pth"):
+    return
 
 
 def main():
@@ -75,10 +196,10 @@ def main():
         reward_space="IrInstructionCountOz"
     )
     # line added to implement custom reward
-    env = RuntimeImprovementWrapper(env)
+    # env = RuntimeImprovementWrapper(env)
     seed = 42
     env.action_space.seed(seed)
-    env.seed = seed 
+    # env.seed = lambda self, x : self.action_space.seed(x)
 
     # print(env.seed())
 
@@ -88,8 +209,8 @@ def main():
     # print(env.action_space.from_string("-loop-unroll"))
 
     # Train model on MLP policy network
-    # ppo_training(env)    
-    a2c_training(env)
+    # basic_train(env)
+    ppo_training_sb(env)
 
 
 
