@@ -30,6 +30,7 @@ class RuntimeImprovementWrapper(RewardWrapper):
 
         # For compatibility with stable baselines
         # convert to np array and average runtime observation count
+        # TODO: put this before the array subtraction
         reward = np.mean(np.array(reward))
 
         return reward
