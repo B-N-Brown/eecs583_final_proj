@@ -75,8 +75,6 @@ def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("USING DEVICE:", device)
 
-    print(f"TYPE {type(env.action_space)}")
-
     # Train model on MLP policy network
     # basic_train(env)
     ppo_training_sb(env, device)
