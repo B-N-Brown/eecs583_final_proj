@@ -50,19 +50,21 @@ def gym_training(env):
     env.close()
 
 # STABLE BASELINES TRAINING REGIMES
-def ppo_training_sb(env):
+def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     # Create vectorized env (recommended for SB3)
-    vec_env = make_vec_env(lambda: env, n_envs=1)
+    vec_env = make_vec_env(lambda: env, n_envs=8)
 
     model = PPO(
         "MlpPolicy", 
         vec_env, 
         verbose=1, 
-        batch_size=2,
-        n_epochs=1,
-        seed=1
+        batch_size=256,
+        n_epochs=10,
+        seed=42,
+        device=device
     )
-    model.learn(total_timesteps=5)
+    model.learn(total_timesteps=50000, progress_bar=True)
+    model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
 def a2c_training_sb(env):
@@ -74,7 +76,7 @@ def a2c_training_sb(env):
 
     # Train
     model = A2C("MlpPolicy", vec_env, policy_kwargs=policy_kwargs, verbose=1)
-    model.learn(total_timesteps=50000)
+    model.learn(total_timesteps=5000, progress_bar=True)
 
     # Save or evaluate
     model.save("a2c_compilergym")
@@ -207,6 +209,10 @@ def main():
     seed = 42
     env.action_space.seed(seed)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print("USING DEVICE:", device)
+
+
     # env.seed = lambda self, x : self.action_space.seed(x)
 
     # print(env.seed())
@@ -218,7 +224,7 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
-    ppo_training_sb(env)
+    ppo_training_sb(env, device)
 
 
 
