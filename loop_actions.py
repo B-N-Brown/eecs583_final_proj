@@ -1,0 +1,23 @@
+loop_opt_actions = [
+       "-loop-deletion",
+        "-loop-distribute",
+        "-loop-fusion",
+        "-loop-guard-widening",
+        "-loop-idiom",
+        "-loop-instsimplify",
+        "-loop-interchange",
+        "-loop-load-elim",
+        "-loop-predication",
+        "-loop-reroll",
+        "-loop-rotate",
+        "-loop-simplifycfg",
+        "-loop-simplify",
+        "-loop-sink",
+        "-loop-reduce",
+        "-loop-unroll-and-jam",
+        "-loop-unroll",
+        "-loop-unswitch",
+        "-loop-vectorize",
+        "-loop-versioning-licm",
+        "-loop-versioning"
+]
