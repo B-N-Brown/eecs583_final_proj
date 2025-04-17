@@ -2,6 +2,8 @@
 import gym
 import torch
 import compiler_gym
+from compiler_gym.spaces import Commandline, CommandlineFlag
+from compiler_gym.wrappers.commandline import ConstrainedCommandline
 from tqdm import tqdm
 from pprint import pprint
 from torch import optim
@@ -153,53 +155,53 @@ def compute_returns(rewards, gamma=0.99):
         returns.insert(0, R)
     return returns
 
-def basic_train(env, checkpoint_name="basic_model.pth", episodes=50, gamma=0.99, lr=1e-2):
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.n
+# def basic_train(env, checkpoint_name="basic_model.pth", episodes=50, gamma=0.99, lr=1e-2):
+#     state_dim = env.observation_space.shape[0]
+#     action_dim = env.action_space.n
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print("USING DEVICE:", device)
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     print("USING DEVICE:", device)
 
-    policy_net = PolicyNetwork(state_dim, action_dim).to(device)
-    optimizer = optim.Adam(policy_net.parameters(), lr=lr)
+#     policy_net = PolicyNetwork(state_dim, action_dim).to(device)
+#     optimizer = optim.Adam(policy_net.parameters(), lr=lr)
 
-    for episode in tqdm(range(episodes)):
-        state = env.reset()
-        state = torch.from_numpy(state).to(device)
+#     for episode in tqdm(range(episodes)):
+#         state = env.reset()
+#         state = torch.from_numpy(state).to(device)
 
-        log_probs = []
-        rewards = []
+#         log_probs = []
+#         rewards = []
 
-        with tqdm(desc="Processing") as pbar:
-            tqdm_counter = 0
+#         with tqdm(desc="Processing") as pbar:
+#             tqdm_counter = 0
 
-            done = False
-            while not done:
-                action, log_prob = select_action(policy_net, state)
-                next_state, reward, done, _ = env.step(action)
+#             done = False
+#             while not done:
+#                 action, log_prob = select_action(policy_net, state)
+#                 next_state, reward, done, _ = env.step(action)
 
-                log_probs.append(log_prob)
-                rewards.append(reward)
-                state = next_state
+#                 log_probs.append(log_prob)
+#                 rewards.append(reward)
+#                 state = next_state
 
-                tqdm_counter += 1
-                pbar.update(tqdm_counter)
+#                 tqdm_counter += 1
+#                 pbar.update(tqdm_counter)
 
-        returns = compute_returns(rewards, gamma)
-        returns = torch.tensor(returns)
-        returns = (returns - returns.mean()) / (returns.std() + 1e-8)
+#         returns = compute_returns(rewards, gamma)
+#         returns = torch.tensor(returns)
+#         returns = (returns - returns.mean()) / (returns.std() + 1e-8)
 
-        loss = -torch.sum(torch.stack(log_probs) * returns)
+#         loss = -torch.sum(torch.stack(log_probs) * returns)
 
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
+#         optimizer.zero_grad()
+#         loss.backward()
+#         optimizer.step()
 
-        total_reward = sum(rewards)
-        print(f"Episode {episode}, total reward: {total_reward}")
+#         total_reward = sum(rewards)
+#         print(f"Episode {episode}, total reward: {total_reward}")
 
-    torch.save(f"model_checkpoints/{checkpoint_name}")
-    env.close()
+#     torch.save(f"model_checkpoints/{checkpoint_name}")
+#     env.close()
 
 def basic_eval(env, checkpoint_name="basic_model.pth"):
     return
@@ -212,28 +214,43 @@ def main():
     # compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
     print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
 
-    # Initialize environment
+    # Initialize environment    
+    my_actions = [
+        "-loop-unroll",
+        "-loop-vectorize",
+    ]
+
+    # Wrap the environment to restrict action space
     env = compiler_gym.make(
         "llvm-v0",
         benchmark="cbench-v1/sha", 
         observation_space="Autophase",
         reward_space="IrInstructionCountOz"
     )
+
+
+    env = ConstrainedCommandline(env, my_actions)
+
+
     # line added to implement custom reward
     env = RuntimeImprovementWrapper(env)
     seed = 42
+
     env.action_space.seed(seed)
+    
+    print(env.action_space)
     env.runtime_observation_count = 1
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("USING DEVICE:", device)
 
-
     # env.seed = lambda self, x : self.action_space.seed(x)
 
     # print(env.seed())
 
-    # action_spaces = [ env.action_space["-loop-unroll"],  env.action_space["-loop-reroll"]]
+    
+    #action_spaces = [ env.action_space["-loop-unroll"],  env.action_space["-loop-reroll"]]
+    print(f"TYPE {type(env.action_space)}")
     # print("ACTION SPACE:", env.action_space)
     # print("OBSERVATION SPACE:", env.observation_space)
     # print(env.action_space.from_string("-loop-unroll"))
