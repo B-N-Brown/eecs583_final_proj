@@ -11,6 +11,7 @@ class RuntimeImprovementWrapper(RewardWrapper):
     def __init__(self, env):
         super().__init__(env)
         self.last_runtime = 0.0
+        self.env.runtime_observation_count = 2
 
     def reset(self, **kwargs):
         obs = self.env.reset(**kwargs)
@@ -20,8 +21,9 @@ class RuntimeImprovementWrapper(RewardWrapper):
     
     def step(self, action):
         # print(f"action from step: {action}")
+        action = int(action)
         observation, reward, done, info = self.env.step(action)
-        return observation, reward, done, info 
+        return observation, self.convert_reward(reward), done, info 
 
     def convert_reward(self, reward):  # required method
         # Get current runtime
