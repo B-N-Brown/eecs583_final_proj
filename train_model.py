@@ -62,7 +62,6 @@ from runtime_reward import RuntimeImprovementWrapper
             
 #             # exit()
 
-
 #     env.close()
 NUM_TIMESTEPS = 20
 # STABLE BASELINES TRAINING REGIMES
@@ -224,6 +223,7 @@ def main():
     env = RuntimeImprovementWrapper(env)
     seed = 42
     env.action_space.seed(seed)
+    env.runtime_observation_count = 1
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("USING DEVICE:", device)
