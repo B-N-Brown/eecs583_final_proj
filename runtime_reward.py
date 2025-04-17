@@ -1,3 +1,4 @@
+import numpy as np
 import compiler_gym
 from compiler_gym.spaces import Reward
 from compiler_gym.wrappers import RewardWrapper
@@ -30,7 +31,15 @@ class RuntimeImprovementWrapper(RewardWrapper):
         reward = self.last_runtime - current_runtime
         self.last_runtime = current_runtime
 
-        print("REWARD:", reward)
+        # print("CURR RUN:", current_runtime)
+        # print(self.env.observation)
+        
+        # print("obs count:", self.env.runtime_observation_count)
+
+        # For compatibility with stable baselines
+        # convert to np array and average runtime observation count
+        reward = np.mean(np.array(reward))
+
         return reward
     
 

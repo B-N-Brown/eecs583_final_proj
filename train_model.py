@@ -54,8 +54,15 @@ def ppo_training_sb(env):
     # Create vectorized env (recommended for SB3)
     vec_env = make_vec_env(lambda: env, n_envs=1)
 
-    model = PPO("MlpPolicy", vec_env, verbose=1, batch_size=2)
-    model.learn(total_timesteps=10000)
+    model = PPO(
+        "MlpPolicy", 
+        vec_env, 
+        verbose=1, 
+        batch_size=2,
+        n_epochs=1,
+        seed=1
+    )
+    model.learn(total_timesteps=5)
 
 
 def a2c_training_sb(env):
@@ -196,9 +203,10 @@ def main():
         reward_space="IrInstructionCountOz"
     )
     # line added to implement custom reward
-    # env = RuntimeImprovementWrapper(env)
+    env = RuntimeImprovementWrapper(env)
     seed = 42
     env.action_space.seed(seed)
+
     # env.seed = lambda self, x : self.action_space.seed(x)
 
     # print(env.seed())
