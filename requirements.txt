@@ -8,3 +8,4 @@ pydantic==1.9.0
 stable_baselines3
 ray[rllib]==2.9.0
 gymnasium
+matplotlib
