@@ -1,11 +1,11 @@
-compiler_gym
-gym
+compiler_gym==0.1.10
+gym==0.26.2
 tqdm
 numpy==1.23.5
-torch
+torch==2.6.0
 protobuf==3.20.0
 pydantic==1.9.0
 stable_baselines3
 ray[rllib]==2.9.0
-gymnasium
+gymnasium==0.28.1
 matplotlib
