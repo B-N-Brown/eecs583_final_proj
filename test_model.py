@@ -67,10 +67,10 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
             tqdm_counter = 0
 
             while not done:
-                # action, _ = model.predict(observation, deterministic=True)
-                # print("ACTION:", type(action))
+                action, _ = model.predict(observation, deterministic=True)
+                print("ACTION:", type(action))
                 action = env.action_space.sample()
-                # print("ACTION1:", type(action))
+                print("ACTION1:", type(action))
 
                 observation, reward, done, info = env.step(action)
 
