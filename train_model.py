@@ -7,30 +7,36 @@ from tqdm import tqdm
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
 
-from loop_actions import loop_opt_actions
+from loop_actions import loop_opt_actions, loop_action_space
 
 from runtime_reward import RuntimeImprovementWrapper
 
-NUM_TIMESTEPS = 20
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    # Create vectorized env (recommended for SB3)
-    vec_env = make_vec_env(lambda: env, n_envs=8)
+    n_steps = 256
+    n_envs = 8
+    total_timesteps = n_steps * n_envs # PPO training min
 
+    # Create vectorized env (recommended for SB3)
+    vec_env = make_vec_env(lambda: env, n_envs=n_envs)
+    
     model = PPO(
         "MlpPolicy", 
         vec_env, 
         verbose=1, 
         batch_size=256,
+        n_steps=n_steps,
         n_epochs=10,
         seed=42,
         device=device
     )
-    model.learn(total_timesteps=NUM_TIMESTEPS, progress_bar=True)
+    model.learn(total_timesteps=total_timesteps, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
 def a2c_training_sb(env):
+    total_timesteps = 2048
+
     # Wrap in a vectorized env (required by SB3)
     vec_env = make_vec_env(lambda: env, n_envs=1)
 
@@ -39,7 +45,7 @@ def a2c_training_sb(env):
 
     # Train
     model = A2C("MlpPolicy", vec_env, policy_kwargs=policy_kwargs, verbose=1)
-    model.learn(total_timesteps=NUM_TIMESTEPS, progress_bar=True)
+    model.learn(total_timesteps=total_timesteps, progress_bar=True)
 
     # Save or evaluate
     model.save("a2c_compilergym")
@@ -62,12 +68,13 @@ def main():
 
 
     # Restrict action space to loop actions
-
-    env = ConstrainedCommandline(env, loop_opt_actions)
+    env.action_space = loop_action_space
+    # env = ConstrainedCommandline(env, loop_opt_actions)
 
     # Incorporate Custom Runtime Reward
-
     env = RuntimeImprovementWrapper(env)
+    env.reset()
+
     seed = 42
 
     env.action_space.seed(seed)

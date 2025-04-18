@@ -13,9 +13,8 @@ class RuntimeImprovementWrapper(RewardWrapper):
         self.last_runtime = self.env.observation["Runtime"]
         return obs
     
-    def step(self, action):
-        #print(f"action from step: {action}")
-        action = int(action)
+    def step(self, action, observation=None):
+        # action = int(action)
         observation, reward, done, info = self.env.step(action)
         reward = self.convert_reward(reward)
         return observation, reward, done, info 
