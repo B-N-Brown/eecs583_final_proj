@@ -71,6 +71,8 @@ def main():
     env.action_space = loop_action_space
     # env = ConstrainedCommandline(env, loop_opt_actions)
 
+    
+
     # Incorporate Custom Runtime Reward
     env = RuntimeImprovementWrapper(env)
     env.reset()
@@ -84,7 +86,7 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
-    ppo_training_sb(env, device)
+    ppo_training_sb(env, device, checkpoint_name="testing.pth")
 
 
 if __name__ == "__main__":

@@ -34,7 +34,8 @@ def test_model(env, checkpoint_name="basic_model.pth"):
 
 def test_model_loop(env, checkpoint_name="basic_model.pth"):
     # benchmarks = env.datasets["cbench-v1/sha"].benchmarks
-    results = []
+    total_rewards = []
+    prediction_times = []
 
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
                      print_system_info=True)
@@ -60,14 +61,25 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
     for episode in tqdm(range(n_episodes)):
         env.reset()
         total_reward = 0
+        observation = env.reset()
 
         with tqdm(desc="Processing") as pbar:
             tqdm_counter = 0
 
             while not done:
+                # action, _ = model.predict(observation, deterministic=True)
+                # print("ACTION:", type(action))
                 action = env.action_space.sample()
+                # print("ACTION1:", type(action))
 
                 observation, reward, done, info = env.step(action)
+
+                print("SAMPLD ACTION:", env.action_space.to_string(action))
+                print("info: ", info)
+
+
+                print("ACTION:", action)
+
                 total_reward += reward
                 
                 tqdm_counter += 1
@@ -75,7 +87,9 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
             
             # exit()
 
-        results.append(total_reward)
+        print("Time to run inference on episode:", env.episode_walltime)
+        total_rewards.append(total_reward)
+        prediction_times.append(env.episode_walltime)
 
     plt.plot(total_reward)
     plt.savefig("test_plot.png")
