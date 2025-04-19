@@ -38,7 +38,7 @@ def test_model(env, checkpoint_name="basic_model.pth"):
     print("Averaged reward:", averaged_reward)
 
 def test_model_loop(env, checkpoint_name="basic_model.pth"):
-    # benchmarks = env.datasets["cbench-v1/sha"].benchmarks
+    # benchmarks = env.datasets["cbench-v1/sha"].benchmarks # TODO: choose a benchmark that actually has loops
     total_rewards = []
     initial_execution_times = []
     final_execution_times = []
@@ -46,11 +46,12 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
     reward_ratios = []
     action_selection_freq = {} 
 
+    # TODO: how to tune model architecture for PPO?
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
-                     print_system_info=True)
+                     print_system_info=True) # TODO: consider using something other than PPO? 
 
 
-    n_episodes = 100 
+    n_episodes = 25 
     done = False
 
     for episode in tqdm(range(n_episodes)):
@@ -169,7 +170,7 @@ def main():
     env = compiler_gym.make(
         "llvm-v0",
         benchmark="cbench-v1/sha", 
-        observation_space="Autophase",
+        observation_space="Autophase", # TODO: consider using a different observation space that maybe isn't as broad?
         reward_space="IrInstructionCountOz"
     )
 
@@ -182,7 +183,7 @@ def main():
     print("USING DEVICE:", device)
 
     # Testing code
-    test_model_loop(env)
+    test_model_loop(env, checkpoint_name="mlp_50epochs.pth")
 
 
 

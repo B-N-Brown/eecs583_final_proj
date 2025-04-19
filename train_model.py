@@ -1,4 +1,15 @@
-# Simple policy training script and makeshift environment sampling loop
+"""
+Simple policy training script and makeshift environment sampling loop
+
+TODO List:
+    * Investigate different datasets --> seems like cbench isn't suited for loop unrolling?
+    * Try different feature vectors. Autophase might be too big
+    * Evaluate different learning frameworks:
+        - A2C
+        - DQN
+        - Others?
+    * Finetune ppo params (how tf does this work?)
+"""
 import torch
 import compiler_gym
 from compiler_gym.wrappers.commandline import ConstrainedCommandline
@@ -52,8 +63,6 @@ def a2c_training_sb(env):
 
 
 def main():
-    # TODO: add scripts for loading model hyperparams
-
     # Checking out the dataset
     # compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
     print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
@@ -83,7 +92,7 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
-    ppo_training_sb(env, device, checkpoint_name="llp_50epochs.pth")
+    ppo_training_sb(env, device, checkpoint_name="mlp_50epochs.pth")
 
 
 if __name__ == "__main__":

@@ -24,4 +24,9 @@ loop_opt_actions = [
         CommandlineFlag("-loop-versioning",      "-loop-versioning",           "-loop-versioning"),
 ]
 
+# loop_opt_actions = [
+#         CommandlineFlag("-loop-unroll-and-jam",  "-loop-unroll-and-jam",       "-loop-unroll-and-jam"),
+#         CommandlineFlag("-loop-unroll",          "-loop-unroll",               "-loop-unroll")
+# ]
+
 loop_action_space = Commandline(loop_opt_actions)

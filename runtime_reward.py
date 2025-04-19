@@ -68,12 +68,12 @@ class CodesizeNRuntimeImprovementWrapper(RewardWrapper):
         self.env.reward_ratio = abs(reward)/self.env.last_runtime
         self.env.last_runtime = current_runtime
 
-        # Get code size
+        # TODO Get code size
 
 
 
 
-        # Balance loss
+        # TODO: Balance loss
 
         
         return reward
