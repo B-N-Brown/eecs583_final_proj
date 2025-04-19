@@ -92,7 +92,7 @@ def main():
 
     # Incorporate Custom Runtime Reward
     #env = RuntimeImprovementWrapper(env)
-    env = CodesizeNRuntimeImprovementWrapper(env)
+    env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
     env.reset()
 
     seed = 42
