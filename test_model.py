@@ -1,3 +1,4 @@
+import os
 import gym
 import torch
 import compiler_gym
@@ -15,6 +16,9 @@ from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_util import make_vec_env
 
 from loop_actions import loop_opt_actions, loop_action_space
+
+
+MAX_INFERENCE_ITERS = 150 
 
 
 def test_model(env, checkpoint_name="basic_model.pth"):
@@ -39,73 +43,127 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
     initial_execution_times = []
     final_execution_times = []
     prediction_times = []
-    action_selction_freq = {} 
-
-    empty_flag = CommandlineFlag(" ", " ", "empty_flag")
+    reward_ratios = []
+    action_selection_freq = {} 
 
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
                      print_system_info=True)
 
 
-    n_episodes = 1 
-    # env = gym.wrappers.RecordEpisodeStatistics(env, n_episodes)
+    n_episodes = 100 
     done = False
 
-    for episode in (range(n_episodes)):
+    for episode in tqdm(range(n_episodes)):
         env.reset()
         total_reward = 0
         observation = env.reset()
-        print("obs:", observation)
 
-        # Getting baselines run
-        # env.action_space = empty_flag
-        # fake_action = env.sam
-        # env.step
+        # Getting baseline (initial) run
+        observation, reward, done, info = env.step([])
+        initial_execution_times.append(env.last_runtime)
 
-        # with tqdm(desc="Processing") as pbar:
-        #     tqdm_counter = 0
+        with tqdm(desc="Processing") as pbar:
+            tqdm_counter = 0
 
-        while not done:
-            print("iterating through done loop")
-            action, _ = model.predict(observation, deterministic=False)
-            action = int(action.tolist())
-            
-            #print("SAMPLD ACTION:", env.action_space.to_string(action))
+            while not done:
+                if tqdm_counter > MAX_INFERENCE_ITERS:
+                    print("HIT MAX ITER WALL")
+                    break
 
-            # action = env.action_space.sample()
-            # print("ACTION:", action)
-
-            observation, reward, done, info = env.step(action)
-
-            # print("INFO:", info)
-            # print("REWARD: ", reward)
-
-            if not info["action_had_no_effect"]:
-                action_name = env.action_space.to_string(action)
+                action, _ = model.predict(observation, deterministic=False)
+                action = int(action.tolist())
                 
-                if action_name not in action_selction_freq:
-                    action_selction_freq[env.action_space.to_string(action)] = 0
+                #print("SAMPLD ACTION:", env.action_space.to_string(action))
 
-                else:
-                    action_selction_freq[env.action_space.to_string(action)] += 1
+                # action = env.action_space.sample()
+                # print("ACTION:", action)
 
-            total_reward += reward
-                
-                # tqdm_counter += 1
-                # pbar.update(1)
-            print()
-            break
+                observation, reward, done, info = env.step(action)
 
-                # Done threshold
-            
-            # exit()
+                # print("INFO:", info)
+                # print("REWARD: ", reward)
 
-        print("Time to run inference on episode:", env.episode_walltime)
+                if not info["action_had_no_effect"]:
+                    action_name = env.action_space.to_string(action)
+                    
+                    if action_name not in action_selection_freq:
+                        action_selection_freq[env.action_space.to_string(action)] = 0
+
+                    else:
+                        action_selection_freq[env.action_space.to_string(action)] += 1
+
+                total_reward += reward
+                    
+                tqdm_counter += 1
+                pbar.update(1)
+
+        
+        # Final data collection 
+        # print("Time to run inference on episode:", env.episode_walltime)
         total_rewards.append(total_reward)
         prediction_times.append(env.episode_walltime)
+        reward_ratios.append(env.reward_ratio)
+        final_execution_times.append(env.last_runtime)
 
-    # plt.plot(total_reward)
-    # plt.savefig("test_plot.png")
+
+    # Plotting all the results
+    data_vis(total_rewards,
+            prediction_times, 
+            reward_ratios, 
+            final_execution_times, 
+            initial_execution_times,
+            action_selection_freq)
+
+
+def data_vis(
+        total_rewards,
+        prediction_times, 
+        reward_ratios, 
+        final_execution_times, 
+        initial_execution_times,
+        action_selection_freq,
+        fig_sub_dir="basic_figs"
+) -> None:
+    assert(len(final_execution_times) > 0)
+
+    if not os.path.isdir(f"figs/{fig_sub_dir}"):
+        os.mkdir(f"figs/{fig_sub_dir}")
+
+    fig, ax = plt.subplots()
+
+    ax.plot(total_rewards)
+    ax.set_title("Total Episode Rewards (Exec Time)")
+    plt.savefig(f"figs/{fig_sub_dir}/total_rewards.png")
+    fig.clf()
+
+    fig, ax = plt.subplots()
+
+    ax.plot(prediction_times)
+    ax.set_title("Time to optimize (inference time)")
+    plt.savefig(f"figs/{fig_sub_dir}/infer_time.png")
+    fig.clf()
+
+    fig, ax = plt.subplots()
+    ax.plot(reward_ratios)
+    ax.set_title("Reward Ratio")
+    plt.savefig(f"figs/{fig_sub_dir}/reward_ratio.png")
+    fig.clf()
+
+    fig, ax = plt.subplots()
+    ax.plot(final_execution_times, c="b", label="Final")
+    ax.plot(initial_execution_times, c="r", label="Initial")
+    ax.set_title("Execution time before/after optimization")
+    ax.legend()
+    plt.savefig(f"figs/{fig_sub_dir}/exec_time.png")
+    fig.clf()
+
+    fig, ax = plt.subplots()
+    bins = action_selection_freq.keys()
+    freqs = action_selection_freq.values()
+    plt.title("Instruction selection frequencies")
+    plt.bar(bins, freqs)
+    plt.savefig(f"figs/{fig_sub_dir}/instr_hist.png")
+
 
 def main():
     env = compiler_gym.make(

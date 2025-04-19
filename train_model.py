@@ -13,7 +13,7 @@ from runtime_reward import RuntimeImprovementWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 256
+    n_steps = 256 * 2
     n_envs = 8
     total_timesteps = n_steps * n_envs # PPO training min
 
@@ -24,9 +24,9 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         "MlpPolicy", 
         vec_env, 
         verbose=1, 
-        batch_size=256,
+        batch_size=256 * 2,
         n_steps=n_steps,
-        n_epochs=10,
+        n_epochs=50,
         seed=42,
         device=device
     )
@@ -66,12 +66,9 @@ def main():
         reward_space="IrInstructionCountOz"
     )
 
-
     # Restrict action space to loop actions
     env.action_space = loop_action_space
     # env = ConstrainedCommandline(env, loop_opt_actions)
-
-    
 
     # Incorporate Custom Runtime Reward
     env = RuntimeImprovementWrapper(env)
@@ -86,7 +83,7 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
-    ppo_training_sb(env, device, checkpoint_name="testing.pth")
+    ppo_training_sb(env, device, checkpoint_name="llp_50epochs.pth")
 
 
 if __name__ == "__main__":
