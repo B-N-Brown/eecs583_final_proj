@@ -74,6 +74,7 @@ def main():
         observation_space="Autophase",
         reward_space="IrInstructionCountOz"
     )
+    
 
     # Restrict action space to loop actions
     env.action_space = loop_action_space

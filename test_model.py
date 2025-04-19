@@ -50,7 +50,6 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
                      print_system_info=True) # TODO: consider using something other than PPO? 
 
-
     n_episodes = 25 # TODO: Hyperparameter tuning
     done = False
 

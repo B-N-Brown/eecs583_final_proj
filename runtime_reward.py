@@ -35,7 +35,6 @@ class RuntimeImprovementWrapper(RewardWrapper):
 
         return reward
 
-
 class CodesizeNRuntimeImprovementWrapper(RewardWrapper):
     def __init__(self, env, alpha):
         super().__init__(env)
