@@ -19,9 +19,9 @@ from tqdm import tqdm
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
 
-from loop_actions import loop_opt_actions, loop_action_space
+from loop_actions import loop_action_space
 
-from runtime_reward import RuntimeImprovementWrapper
+from runtime_reward import RuntimeImprovementWrapper, CodesizeNRuntimeImprovementWrapper
 from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
@@ -91,7 +91,9 @@ def main():
     env.action_space = loop_action_space
 
     # Incorporate Custom Runtime Reward
-    env = RuntimeImprovementWrapper(env)
+    #env = RuntimeImprovementWrapper(env)
+    env = CodesizeNRuntimeImprovementWrapper(env)
+    env.reset()
 
     seed = 42
 
