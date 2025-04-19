@@ -82,7 +82,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
                 observation, reward, done, info = env.step(action)
 
                 # print("INFO:", info)
-                # print("REWARD: ", reward)
+                print("REWARD: ", reward)
 
                 if not info["action_had_no_effect"]:
                     action_name = env.action_space.to_string(action)
