@@ -24,16 +24,16 @@ MAX_INFERENCE_ITERS = 150
 def test_model(env, checkpoint_name="basic_model.pth"):
     # model = model.load(path=f"model_checkpoints/{checkpoint_name}")
 
-    model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
+    model = PPO.load(f"model_checkpoints/{checkpoint_name}",
                      print_system_info=True)
     
     averaged_reward = evaluate_policy(
-                            env=env, 
+                            env=env,
                             model=model,
                             n_eval_episodes=1,
                             reward_threshold=0.0000001,
-                            return_episode_rewards=True,              
-                     ) 
+                            return_episode_rewards=True,
+                            )
 
     print("Averaged reward:", averaged_reward)
 
@@ -51,7 +51,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
                      print_system_info=True) # TODO: consider using something other than PPO? 
 
 
-    n_episodes = 25 
+    n_episodes = 25 # TODO: Hyperparameter tuning
     done = False
 
     for episode in tqdm(range(n_episodes)):
@@ -169,7 +169,7 @@ def data_vis(
 def main():
     env = compiler_gym.make(
         "llvm-v0",
-        benchmark="cbench-v1/sha", 
+        benchmark="cbench-v1/sha", # TODO: find a good benchmark
         observation_space="Autophase", # TODO: consider using a different observation space that maybe isn't as broad?
         reward_space="IrInstructionCountOz"
     )
