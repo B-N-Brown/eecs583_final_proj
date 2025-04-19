@@ -18,9 +18,9 @@ from tqdm import tqdm
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
 
-from loop_actions import loop_opt_actions, loop_action_space
+from loop_actions import loop_action_space
 
-from runtime_reward import RuntimeImprovementWrapper
+from runtime_reward import RuntimeImprovementWrapper, CodesizeNRuntimeImprovementWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
@@ -74,13 +74,15 @@ def main():
         observation_space="Autophase",
         reward_space="IrInstructionCountOz"
     )
+    
 
     # Restrict action space to loop actions
     env.action_space = loop_action_space
     # env = ConstrainedCommandline(env, loop_opt_actions)
 
     # Incorporate Custom Runtime Reward
-    env = RuntimeImprovementWrapper(env)
+    #env = RuntimeImprovementWrapper(env)
+    env = CodesizeNRuntimeImprovementWrapper(env)
     env.reset()
 
     seed = 42
