@@ -7,18 +7,20 @@ class RuntimeImprovementWrapper(RewardWrapper):
         self.env.last_runtime = 0.0
         self.env.runtime_observation_count = 2
 
-    def reset(self, **kwargs):
-        obs = self.env.reset(**kwargs)
-        # Get the initial runtime
-        self.env.last_runtime = np.mean(self.env.observation["Runtime"])
-        return obs
+    # Commented out for dset wrapper
+    # TODO: check for any issues from commenting out
+    # def reset(self, **kwargs):
+    #     obs = self.env.reset(**kwargs)
+    #     # Get the initial runtime
+    #     self.env.last_runtime = np.mean(self.env.observation["Runtime"])
+    #     return obs
     
     def step(self, action, observation=None):
         # action = int(action)
         observation, reward, done, info = self.env.step(action)
         reward = self.convert_reward(reward)
         # print("reward ratio: ", self.reward_ratio)
-        done = self.env.reward_ratio < 0.001
+        done = self.env.reward_ratio < 0.002
         return observation, reward, done, info 
 
     def convert_reward(self, reward):  # required method

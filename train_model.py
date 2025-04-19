@@ -12,6 +12,7 @@ TODO List:
 """
 import torch
 import compiler_gym
+from compiler_gym.wrappers import CycleOverBenchmarks
 from compiler_gym.wrappers.commandline import ConstrainedCommandline
 from tqdm import tqdm
 
@@ -21,11 +22,12 @@ from stable_baselines3.common.env_util import make_vec_env
 from loop_actions import loop_opt_actions, loop_action_space
 
 from runtime_reward import RuntimeImprovementWrapper
+from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 256 * 2
-    n_envs = 8
+    n_steps = 256
+    n_envs = 2
     total_timesteps = n_steps * n_envs # PPO training min
 
     # Create vectorized env (recommended for SB3)
@@ -35,7 +37,7 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         "MlpPolicy", 
         vec_env, 
         verbose=1, 
-        batch_size=256 * 2,
+        batch_size=256,
         n_steps=n_steps,
         n_epochs=50,
         seed=42,
@@ -45,43 +47,51 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
-def a2c_training_sb(env):
+def a2c_training_sb(env, checkpoint_name="basic_model.pth"):
     total_timesteps = 2048
 
     # Wrap in a vectorized env (required by SB3)
-    vec_env = make_vec_env(lambda: env, n_envs=1)
+    vec_env = make_vec_env(lambda: env, n_envs=8)
 
     # Optional: custom network
-    policy_kwargs = dict(net_arch=[dict(pi=[128, 128], vf=[128, 128])])
+    # policy_kwargs = dict(net_arch=[dict(pi=[128, 128], vf=[128, 128])])
 
     # Train
-    model = A2C("MlpPolicy", vec_env, policy_kwargs=policy_kwargs, verbose=1)
+    model = A2C("MlpPolicy", vec_env, verbose=1)
     model.learn(total_timesteps=total_timesteps, progress_bar=True)
 
-    # Save or evaluate
-    model.save("a2c_compilergym")
+    model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
 def main():
     # Checking out the dataset
     # compiler_gym.envs.llvm.datasets.CBenchDataset("cbench-v1/sha")
-    print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets("anghabench-v1"))
+
+    # Uncomment to install all datasets (takes a couple mins)
+    # print("PRINTING:", compiler_gym.envs.llvm.datasets.get_llvm_datasets())
+    # for dset in compiler_gym.envs.llvm.datasets.get_llvm_datasets():
+    #     print(dset.install())
+
+    angha_dset = compiler_gym.envs.llvm.datasets.AnghaBenchDataset("anghabench-v1")
+    cbench_dset = compiler_gym.envs.llvm.datasets.CBenchDataset("cbench")
+    print(angha_dset.benchmark_uris())
 
     # Wrap the environment to restrict action space
     env = compiler_gym.make(
         "llvm-v0",
-        benchmark="cbench-v1/sha", 
+        # benchmark="cbench/sha", 
         observation_space="Autophase",
         reward_space="IrInstructionCountOz"
     )
 
+    print("dset size:", cbench_dset.size)
+    env = CycleOverBenchmarks(env, cbench_dset.benchmark_uris())
+
     # Restrict action space to loop actions
     env.action_space = loop_action_space
-    # env = ConstrainedCommandline(env, loop_opt_actions)
 
     # Incorporate Custom Runtime Reward
     env = RuntimeImprovementWrapper(env)
-    env.reset()
 
     seed = 42
 
@@ -92,7 +102,8 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
-    ppo_training_sb(env, device, checkpoint_name="mlp_50epochs.pth")
+    ppo_training_sb(env, device, checkpoint_name="mlp_cbench_50epochs.pth")
+    # a2c_training_sb(env, checkpoint_name="a2c_mlp_50epochs.pth")
 
 
 if __name__ == "__main__":

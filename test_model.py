@@ -132,7 +132,7 @@ def data_vis(
 
     fig, ax = plt.subplots()
 
-    ax.plot(total_rewards)
+    ax.plot(total_rewards, "*")
     ax.set_title("Total Episode Rewards (Exec Time)")
     plt.savefig(f"figs/{fig_sub_dir}/total_rewards.png")
     fig.clf()
@@ -151,8 +151,8 @@ def data_vis(
     fig.clf()
 
     fig, ax = plt.subplots()
-    ax.plot(final_execution_times, c="b", label="Final")
-    ax.plot(initial_execution_times, c="r", label="Initial")
+    ax.plot(final_execution_times, "*", c="b", label="Final")
+    ax.plot(initial_execution_times, "+", c="r", label="Initial")
     ax.set_title("Execution time before/after optimization")
     ax.legend()
     plt.savefig(f"figs/{fig_sub_dir}/exec_time.png")
@@ -169,7 +169,7 @@ def data_vis(
 def main():
     env = compiler_gym.make(
         "llvm-v0",
-        benchmark="cbench-v1/sha", # TODO: find a good benchmark
+        benchmark="cbench-v1/qsort", # TODO: find a good benchmark
         observation_space="Autophase", # TODO: consider using a different observation space that maybe isn't as broad?
         reward_space="IrInstructionCountOz"
     )
@@ -183,7 +183,8 @@ def main():
     print("USING DEVICE:", device)
 
     # Testing code
-    test_model_loop(env, checkpoint_name="mlp_50epochs.pth")
+    # test_model_loop(env, checkpoint_name="a2c_mlp_50epochs.pth")
+    test_model_loop(env, checkpoint_name="mlp_blas_50epochs.pth")
 
 
 
