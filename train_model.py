@@ -13,8 +13,7 @@ TODO List:
 import torch
 import compiler_gym
 from compiler_gym.wrappers import CycleOverBenchmarks
-from compiler_gym.wrappers.commandline import ConstrainedCommandline
-from tqdm import tqdm
+from stable_baselines3.common.logger import configure
 
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
@@ -26,7 +25,7 @@ from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 256
+    n_steps = 5
     n_envs = 2
     total_timesteps = n_steps * n_envs # PPO training min
 
@@ -39,11 +38,14 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         verbose=1, 
         batch_size=256,
         n_steps=n_steps,
-        n_epochs=50,
+        n_epochs=1,
         seed=42,
         device=device
     )
-    model.learn(total_timesteps=total_timesteps, progress_bar=True)
+    log_path = 'logs/'
+    new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
+    model.set_logger(new_logger)
+    model.learn(total_timesteps=total_timesteps, progress_bar=False)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
@@ -104,6 +106,7 @@ def main():
 
     # Train model on MLP policy network
     # basic_train(env)
+
     ppo_training_sb(env, device, checkpoint_name="mlp_cbench_50epochs.pth")
     # a2c_training_sb(env, checkpoint_name="a2c_mlp_50epochs.pth")
 
