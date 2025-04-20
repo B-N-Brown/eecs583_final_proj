@@ -35,22 +35,31 @@ class RuntimeInstCountReward(Reward):
 
     def reset(self, benchmark, observation_view) -> None:
         # If we are changing the benchmark then check that it is runnable.
-        if benchmark != self.current_benchmark:
-            if not observation_view["IsRunnable"]:
-                raise ValueError(f"Benchmark is not runnable: {benchmark}")
-            self.current_benchmark = benchmark
-            self.starting_runtime = None
-            self.starting_inst_count = None
+        # if benchmark != self.current_benchmark:
+        #                 self.current_benchmark = benchmark
+        #     self.starting_runtime = None
+        #     self.starting_inst_count = None
 
-        # Compute initial runtime if required, else use previously computed
-        # value.
-        if self.starting_runtime is None:
-            self.starting_runtime = self.estimator(observation_view["Runtime"])
-        if self.starting_inst_count is None:
-            self.starting_inst_count = observation_view['IrInstructionCount']
+        # # Compute initial runtime if required, else use previously computed
+        # # value.
+        # if self.starting_runtime is None:
+        #     self.starting_runtime = self.estimator(observation_view["Runtime"])
+        # if self.starting_inst_count is None:
+        #     self.starting_inst_count = observation_view['IrInstructionCount']
 
+        # self.previous_runtime = self.starting_runtime
+        # self.previous_inst_count = self.starting_inst_count
+
+        # Resetting everything on env.reset()
+        if not observation_view["IsRunnable"]:
+            raise ValueError(f"Benchmark is not runnable: {benchmark}")
+
+        self.starting_runtime = self.estimator(observation_view["Runtime"])
+        self.starting_inst_count = observation_view['IrInstructionCount']
         self.previous_runtime = self.starting_runtime
         self.previous_inst_count = self.starting_inst_count
+        self.current_benchmark = benchmark
+
 
     def update(
         self,
