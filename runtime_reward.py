@@ -9,11 +9,11 @@ class RuntimeImprovementWrapper(RewardWrapper):
 
     # Commented out for dset wrapper
     # TODO: check for any issues from commenting out
-    # def reset(self, **kwargs):
-    #     obs = self.env.reset(**kwargs)
-    #     # Get the initial runtime
-    #     self.env.last_runtime = np.mean(self.env.observation["Runtime"])
-    #     return obs
+    def reset(self, **kwargs):
+        obs = self.env.reset(**kwargs)
+        # Get the initial runtime
+        self.env.last_runtime = np.mean(self.env.observation["Runtime"])
+        return obs
     
     def step(self, action, observation=None):
         # action = int(action)
@@ -34,6 +34,16 @@ class RuntimeImprovementWrapper(RewardWrapper):
         reward = self.env.last_runtime - current_runtime
         self.env.reward_ratio = abs(reward)/self.env.last_runtime
         self.env.last_runtime = current_runtime
+
+        if len(self.env.observation["Runtime"]) == 0:
+            print("WHAT THE FUCK")
+            
+
+        if np.isnan(self.env.last_runtime) or np.isnan(current_runtime):
+
+            print("IM GOING TO KMS")
+            print(self.env.last_runtime, current_runtime)
+
 
         return reward
 

@@ -12,7 +12,7 @@ TODO List:
 """
 import torch
 import compiler_gym
-from compiler_gym.wrappers import CycleOverBenchmarks
+from compiler_gym.wrappers import CycleOverBenchmarks, IterateOverBenchmarks
 from compiler_gym.wrappers.commandline import ConstrainedCommandline
 from tqdm import tqdm
 
@@ -26,8 +26,8 @@ from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 256
-    n_envs = 2
+    n_steps =128 
+    n_envs = 1
     total_timesteps = n_steps * n_envs # PPO training min
 
     # Create vectorized env (recommended for SB3)
@@ -36,10 +36,10 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     model = PPO(
         "MlpPolicy", 
         vec_env, 
-        verbose=1, 
+        verbose=2, 
         batch_size=256,
         n_steps=n_steps,
-        n_epochs=50,
+        n_epochs=5,
         seed=42,
         device=device
     )
@@ -84,15 +84,16 @@ def main():
         reward_space="IrInstructionCountOz"
     )
 
-    print("dset size:", cbench_dset.size)
-    env = CycleOverBenchmarks(env, cbench_dset.benchmark_uris())
+    print("dset size:", angha_dset.size)
 
     # Restrict action space to loop actions
     env.action_space = loop_action_space
 
     # Incorporate Custom Runtime Reward
-    #env = RuntimeImprovementWrapper(env)
-    env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
+    env = RuntimeImprovementWrapper(env)
+    # env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
+
+    env = CycleOverBenchmarks(env, angha_dset.benchmark_uris())
     env.reset()
 
     seed = 42
