@@ -187,8 +187,8 @@ def main():
 
     env.action_space = loop_action_space
     env.reset()
-
     env = RuntimeInstCountRewardWrapper(env)
+
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("USING DEVICE:", device)
@@ -200,7 +200,7 @@ def main():
     #                 fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_rewardfix")
     
     test_model_loop(env, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth", 
-                    fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth")
+                    fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_lr_0001_rewardfix.pth")
 
 
 
