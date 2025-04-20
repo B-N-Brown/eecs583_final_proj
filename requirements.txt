@@ -9,3 +9,4 @@ stable_baselines3
 ray[rllib]==2.9.0
 gymnasium==0.28.1
 matplotlib
+shimmy>=0.2.1

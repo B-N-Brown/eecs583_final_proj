@@ -12,13 +12,13 @@ TODO List:
 """
 import torch
 import compiler_gym
-from compiler_gym.wrappers import CycleOverBenchmarks, IterateOverBenchmarks
-from stable_baselines3.common.logger import configure
+from compiler_gym.wrappers import CycleOverBenchmarks, IterateOverBenchmarks, ConstrainedCommandline
+# from stable_baselines3.common.logger import configure
 
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
 
-from loop_actions import loop_action_space
+from loop_actions import loop_action_space, loop_opt_actions
 
 from runtime_reward import RuntimeImprovementWrapper, CodesizeNRuntimeImprovementWrapper
 from dataset_wrapper import CBenchWrapper
@@ -42,9 +42,9 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         seed=42,
         device=device
     )
-    log_path = 'logs/'
-    new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
-    model.set_logger(new_logger)
+    # log_path = 'logs/'
+    # new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
+    # model.set_logger(new_logger)
     model.learn(total_timesteps=total_timesteps, progress_bar=False)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
@@ -61,7 +61,6 @@ def a2c_training_sb(env, checkpoint_name="basic_model.pth"):
     # Train
     model = A2C("MlpPolicy", vec_env, verbose=1)
     model.learn(total_timesteps=total_timesteps, progress_bar=True)
-
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
