@@ -35,6 +35,16 @@ class RuntimeImprovementWrapper(RewardWrapper):
         self.env.reward_ratio = abs(reward)/self.env.last_runtime
         self.env.last_runtime = current_runtime
 
+        if len(self.env.observation["Runtime"]) == 0:
+            print("WHAT THE FUCK")
+            
+
+        if np.isnan(self.env.last_runtime) or np.isnan(current_runtime):
+
+            print("IM GOING TO KMS")
+            print(self.env.last_runtime, current_runtime)
+
+
         return reward
 
 class CodesizeNRuntimeImprovementWrapper(RewardWrapper):

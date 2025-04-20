@@ -12,7 +12,7 @@ TODO List:
 """
 import torch
 import compiler_gym
-from compiler_gym.wrappers import CycleOverBenchmarks
+from compiler_gym.wrappers import CycleOverBenchmarks, IterateOverBenchmarks
 from stable_baselines3.common.logger import configure
 
 from stable_baselines3 import PPO, A2C
@@ -35,7 +35,7 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     model = PPO(
         "MlpPolicy", 
         vec_env, 
-        verbose=1, 
+        verbose=2, 
         batch_size=256,
         n_steps=n_steps,
         n_epochs=5,
@@ -86,15 +86,16 @@ def main():
         reward_space="IrInstructionCountOz"
     )
 
-    print("dset size:", cbench_dset.size)
-    env = CycleOverBenchmarks(env, cbench_dset.benchmark_uris())
+    print("dset size:", angha_dset.size)
 
     # Restrict action space to loop actions
     env.action_space = loop_action_space
 
     # Incorporate Custom Runtime Reward
     env = RuntimeImprovementWrapper(env)
-    #env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
+    # env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
+
+    env = CycleOverBenchmarks(env, angha_dset.benchmark_uris())
     env.reset()
 
     seed = 42
