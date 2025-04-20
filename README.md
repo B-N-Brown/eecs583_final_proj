@@ -13,6 +13,12 @@ brew install libtinfo5
 python3 -m venv env
 pip3 install -r requirements.txt
 
+
+Also gotta change line 227 of env/lib/python3.11/site-packages/shimmy/openai_gym_compatibility.py to 
+
+self.gym_env.action_space.seed(seed)
+
+
 ## Run
 python3 test_model.py
 
