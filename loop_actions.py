@@ -6,14 +6,14 @@ loop_opt_actions = [
         CommandlineFlag("-loop-fusion",          "-loop-fusion",               "-loop-fusion"),
         CommandlineFlag("-loop-guard-widening",  "-loop-guard-widening",       "-loop-guard-widening"),
         CommandlineFlag("-loop-idiom",           "-loop-idiom",                "-loop-idiom"),
-        CommandlineFlag("-loop-instsimplify",    "-loop-instsimplify",         "-loop-instsimplify"),
+        # CommandlineFlag("-loop-instsimplify",    "-loop-instsimplify",         "-loop-instsimplify"),
         CommandlineFlag("-loop-interchange",     "-loop-interchange",          "-loop-interchange"),
         CommandlineFlag("-loop-load-elim",       "-loop-load-elim",            "-loop-load-elim"),
         CommandlineFlag("-loop-predication",     "-loop-predication",          "-loop-predication"),
         CommandlineFlag("-loop-reroll",          "-loop-reroll",               "-loop-reroll"),
         CommandlineFlag("-loop-rotate",          "-loop-rotate",               "-loop-rotate"),
-        CommandlineFlag("-loop-simplifycfg",     "-loop-simplifycfg",          "-loop-simplifycfg"),
-        CommandlineFlag("-loop-simplify",        "-loop-simplify",             "-loop-simplify"),
+        # CommandlineFlag("-loop-simplifycfg",     "-loop-simplifycfg",          "-loop-simplifycfg"),
+        # CommandlineFlag("-loop-simplify",        "-loop-simplify",             "-loop-simplify"),
         CommandlineFlag("-loop-sink",            "-loop-sink",                 "-loop-sink"),
         CommandlineFlag("-loop-reduce",          "-loop-reduce",               "-loop-reduce"),
         CommandlineFlag("-loop-unroll-and-jam",  "-loop-unroll-and-jam",       "-loop-unroll-and-jam"),
@@ -23,10 +23,5 @@ loop_opt_actions = [
         CommandlineFlag("-loop-versioning-licm", "-loop-versioning-licm",      "-loop-versioning-licm"),
         CommandlineFlag("-loop-versioning",      "-loop-versioning",           "-loop-versioning"),
 ]
-
-# loop_opt_actions = [
-#         CommandlineFlag("-loop-unroll-and-jam",  "-loop-unroll-and-jam",       "-loop-unroll-and-jam"),
-#         CommandlineFlag("-loop-unroll",          "-loop-unroll",               "-loop-unroll")
-# ]
 
 loop_action_space = Commandline(loop_opt_actions)

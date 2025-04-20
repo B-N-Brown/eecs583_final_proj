@@ -25,9 +25,10 @@ from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 128
-    n_envs = 1
+    n_steps = 30 
+    n_envs = 2 
     total_timesteps = n_steps * n_envs # PPO training min
+    total_timesteps *= 26 # Total number of rollouts
 
     # Create vectorized env (recommended for SB3)
     vec_env = make_vec_env(lambda: env, n_envs=n_envs)
@@ -36,15 +37,18 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         "MlpPolicy", 
         vec_env, 
         verbose=2, 
-        batch_size=256,
+        batch_size=20,
         n_steps=n_steps,
-        n_epochs=5,
+        n_epochs=10,
+        learning_rate=0.0002,
+        normalize_advantage=True,
         seed=42,
-        device=device
+        device=device,
+        tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
     )
+
     model.learn(total_timesteps=total_timesteps, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
-
 
 def a2c_training_sb(env, checkpoint_name="basic_model.pth"):
     total_timesteps = 2048
@@ -73,7 +77,7 @@ def main():
     # angha_dset = compiler_gym.envs.llvm.datasets.AnghaBenchDataset("anghabench-v1")
     # cbench_dset = compiler_gym.envs.llvm.datasets.CBenchDataset("cbench")
 
-    dataset = env.datasets["cbench-v1"]
+    # dataset = env.datasets["cbench-v1"]
 
     env = compiler_gym.make(
         "llvm-v0",
@@ -109,11 +113,10 @@ def main():
     # Train model on MLP policy network
     # basic_train(env)
 
-    ppo_training_sb(env, device, checkpoint_name="mlp_cbench_50epochs.pth")
+    ppo_training_sb(env, device, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth")
     # a2c_training_sb(env, checkpoint_name="a2c_mlp_50epochs.pth")
     env.close()
 
 
 if __name__ == "__main__":
     main()
-

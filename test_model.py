@@ -18,7 +18,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from loop_actions import loop_opt_actions, loop_action_space
 
 
-MAX_INFERENCE_ITERS = 150 
+MAX_INFERENCE_ITERS = 20 
 
 
 def test_model(env, checkpoint_name="basic_model.pth"):
@@ -37,7 +37,7 @@ def test_model(env, checkpoint_name="basic_model.pth"):
 
     print("Averaged reward:", averaged_reward)
 
-def test_model_loop(env, checkpoint_name="basic_model.pth"):
+def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_figs"):
     # benchmarks = env.datasets["cbench-v1/sha"].benchmarks # TODO: choose a benchmark that actually has loops
     total_rewards = []
     initial_execution_times = []
@@ -60,7 +60,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
 
         # Getting baseline (initial) run
         observation, reward, done, info = env.step([])
-        # initial_execution_times.append(env.previous_runtime)
+        initial_execution_times.append(env.reward.spaces['runtime'].previous_runtime)
 
         with tqdm(desc="Processing") as pbar:
             tqdm_counter = 0
@@ -81,7 +81,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
                 observation, reward, done, info = env.step(action)
 
                 # print("INFO:", info)
-                print("REWARD: ", reward)
+                # print("REWARD: ", reward)
 
                 if not info["action_had_no_effect"]:
                     action_name = env.action_space.to_string(action)
@@ -101,18 +101,21 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
         # Final data collection 
         # print("Time to run inference on episode:", env.episode_walltime)
         total_rewards.append(total_reward)
-        # prediction_times.append(env.episode_walltime)
+        prediction_times.append(env.episode_walltime)
         # reward_ratios.append(env.reward_ratio)
-        # final_execution_times.append(env.previous_runtime)
+        final_execution_times.append(env.reward.spaces['runtime'].previous_runtime)
 
 
     # Plotting all the results
-    data_vis(total_rewards,
-            prediction_times, 
-            reward_ratios, 
-            final_execution_times, 
-            initial_execution_times,
-            action_selection_freq)
+    data_vis(
+        total_rewards,
+        prediction_times, 
+        reward_ratios, 
+        final_execution_times, 
+        initial_execution_times,
+        action_selection_freq,
+        fig_sub_dir
+    )
 
 
 def data_vis(
@@ -158,6 +161,15 @@ def data_vis(
     fig.clf()
 
     fig, ax = plt.subplots()
+    ax.plot(np.array(initial_execution_times) - np.array(final_execution_times), "*", c="b", label="Final")
+    # ax.scatter(initial_execution_times, "+", c="r", label="Initial")
+    ax.set_title("Execution time before/after optimization (difference)")
+    ax.legend()
+    plt.savefig(f"figs/{fig_sub_dir}/exec_time_diff.png")
+    fig.clf()
+
+
+    fig, ax = plt.subplots()
     bins = action_selection_freq.keys()
     freqs = action_selection_freq.values()
     plt.title("Instruction selection frequencies")
@@ -183,7 +195,12 @@ def main():
 
     # Testing code
     # test_model_loop(env, checkpoint_name="a2c_mlp_50epochs.pth")
-    test_model_loop(env, checkpoint_name="mlp_cbench_50epochs.pth")
+    # test_model_loop(env, checkpoint_name="mlp_cbench_26rollout.pth")
+    # test_model_loop(env, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_rewardfix.pth", 
+    #                 fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_rewardfix")
+    
+    test_model_loop(env, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth", 
+                    fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth")
 
 
 
