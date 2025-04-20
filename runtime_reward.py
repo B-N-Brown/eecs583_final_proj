@@ -9,11 +9,11 @@ class RuntimeImprovementWrapper(RewardWrapper):
 
     # Commented out for dset wrapper
     # TODO: check for any issues from commenting out
-    # def reset(self, **kwargs):
-    #     obs = self.env.reset(**kwargs)
-    #     # Get the initial runtime
-    #     self.env.last_runtime = np.mean(self.env.observation["Runtime"])
-    #     return obs
+    def reset(self, **kwargs):
+        obs = self.env.reset(**kwargs)
+        # Get the initial runtime
+        self.env.last_runtime = np.mean(self.env.observation["Runtime"])
+        return obs
     
     def step(self, action, observation=None):
         # action = int(action)

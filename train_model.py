@@ -25,8 +25,8 @@ from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
-    n_steps = 5
-    n_envs = 2
+    n_steps = 128
+    n_envs = 1
     total_timesteps = n_steps * n_envs # PPO training min
 
     # Create vectorized env (recommended for SB3)
@@ -38,14 +38,14 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         verbose=1, 
         batch_size=256,
         n_steps=n_steps,
-        n_epochs=1,
+        n_epochs=5,
         seed=42,
         device=device
     )
     log_path = 'logs/'
     new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
     model.set_logger(new_logger)
-    model.learn(total_timesteps=total_timesteps, progress_bar=False)
+    model.learn(total_timesteps=total_timesteps, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
@@ -93,8 +93,8 @@ def main():
     env.action_space = loop_action_space
 
     # Incorporate Custom Runtime Reward
-    #env = RuntimeImprovementWrapper(env)
-    env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
+    env = RuntimeImprovementWrapper(env)
+    #env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
     env.reset()
 
     seed = 42
