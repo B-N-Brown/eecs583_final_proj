@@ -20,7 +20,7 @@ from stable_baselines3.common.env_util import make_vec_env
 
 from loop_actions import loop_action_space, loop_opt_actions
 
-from runtime_reward import RuntimeImprovementWrapper, CodesizeNRuntimeImprovementWrapper
+from runtime_reward import RuntimeInstCountRewardWrapper
 from dataset_wrapper import CBenchWrapper
 
 # STABLE BASELINES TRAINING REGIMES
@@ -42,10 +42,7 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         seed=42,
         device=device
     )
-    # log_path = 'logs/'
-    # new_logger = configure(log_path, ["stdout", "csv", "tensorboard"])
-    # model.set_logger(new_logger)
-    model.learn(total_timesteps=total_timesteps, progress_bar=False)
+    model.learn(total_timesteps=total_timesteps, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 
@@ -73,30 +70,35 @@ def main():
     # for dset in compiler_gym.envs.llvm.datasets.get_llvm_datasets():
     #     print(dset.install())
 
-    angha_dset = compiler_gym.envs.llvm.datasets.AnghaBenchDataset("anghabench-v1")
-    cbench_dset = compiler_gym.envs.llvm.datasets.CBenchDataset("cbench")
-    print(angha_dset.benchmark_uris())
+    # angha_dset = compiler_gym.envs.llvm.datasets.AnghaBenchDataset("anghabench-v1")
+    # cbench_dset = compiler_gym.envs.llvm.datasets.CBenchDataset("cbench")
 
-    # Wrap the environment to restrict action space
+    dataset = env.datasets["cbench-v1"]
+
     env = compiler_gym.make(
         "llvm-v0",
-        # benchmark="cbench/sha", 
         observation_space="Autophase",
         reward_space="IrInstructionCountOz"
     )
-
-    print("dset size:", angha_dset.size)
-
+    runnable_benchmarks = ['benchmark://cbench-v1/bitcount', 'benchmark://cbench-v1/blowfish', 'benchmark://cbench-v1/bzip2', 'benchmark://cbench-v1/crc32', 'benchmark://cbench-v1/dijkstra', 'benchmark://cbench-v1/gsm', 'benchmark://cbench-v1/jpeg-c', 'benchmark://cbench-v1/jpeg-d', 'benchmark://cbench-v1/patricia', 'benchmark://cbench-v1/qsort', 'benchmark://cbench-v1/sha', 'benchmark://cbench-v1/stringsearch', 'benchmark://cbench-v1/stringsearch2', 'benchmark://cbench-v1/susan', 'benchmark://cbench-v1/tiff2bw', 'benchmark://cbench-v1/tiff2rgba', 'benchmark://cbench-v1/tiffdither', 'benchmark://cbench-v1/tiffmedian']
+    # runnable_benchmarks = []
+    if len(runnable_benchmarks) == 0:
+        for benchmark in dataset.benchmark_uris():
+            count += 1
+            try:
+                env.reset(benchmark=benchmark)
+                if len(env.observation['Runtime']) > 0:
+                    runnable_benchmarks.append(benchmark)
+            except:
+                continue
+    env.reset()
+    
     # Restrict action space to loop actions
     env.action_space = loop_action_space
 
-    # Incorporate Custom Runtime Reward
-    env = RuntimeImprovementWrapper(env)
-    # env = CodesizeNRuntimeImprovementWrapper(env, alpha=0.5)
-
-    env = CycleOverBenchmarks(env, angha_dset.benchmark_uris())
+    env = CycleOverBenchmarks(env, runnable_benchmarks)
+    env = RuntimeInstCountRewardWrapper(env)
     env.reset()
-
     seed = 42
 
     env.action_space.seed(seed)
@@ -109,6 +111,7 @@ def main():
 
     ppo_training_sb(env, device, checkpoint_name="mlp_cbench_50epochs.pth")
     # a2c_training_sb(env, checkpoint_name="a2c_mlp_50epochs.pth")
+    env.close()
 
 
 if __name__ == "__main__":

@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from compiler_gym.wrappers import RewardWrapper
 from compiler_gym.spaces.commandline import Commandline, CommandlineFlag
 
-from runtime_reward import RuntimeImprovementWrapper
+from runtime_reward import RuntimeInstCountRewardWrapper
 
 import stable_baselines3
 from stable_baselines3 import PPO, A2C
@@ -60,7 +60,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
 
         # Getting baseline (initial) run
         observation, reward, done, info = env.step([])
-        initial_execution_times.append(env.last_runtime)
+        # initial_execution_times.append(env.previous_runtime)
 
         with tqdm(desc="Processing") as pbar:
             tqdm_counter = 0
@@ -101,9 +101,9 @@ def test_model_loop(env, checkpoint_name="basic_model.pth"):
         # Final data collection 
         # print("Time to run inference on episode:", env.episode_walltime)
         total_rewards.append(total_reward)
-        prediction_times.append(env.episode_walltime)
-        reward_ratios.append(env.reward_ratio)
-        final_execution_times.append(env.last_runtime)
+        # prediction_times.append(env.episode_walltime)
+        # reward_ratios.append(env.reward_ratio)
+        # final_execution_times.append(env.previous_runtime)
 
 
     # Plotting all the results
@@ -174,16 +174,16 @@ def main():
     )
 
     env.action_space = loop_action_space
-
-    env = RuntimeImprovementWrapper(env)
     env.reset()
+
+    env = RuntimeInstCountRewardWrapper(env)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("USING DEVICE:", device)
 
     # Testing code
     # test_model_loop(env, checkpoint_name="a2c_mlp_50epochs.pth")
-    test_model_loop(env, checkpoint_name="mlp_blas_50epochs.pth")
+    test_model_loop(env, checkpoint_name="mlp_cbench_50epochs.pth")
 
 
 

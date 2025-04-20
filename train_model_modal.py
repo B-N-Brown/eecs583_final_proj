@@ -26,7 +26,7 @@ import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.registry import register_env
 
-from runtime_reward import RuntimeImprovementWrapper
+from eecs583_final_proj.runtime_reward import RuntimeInstCountRewardWrapper
 
 app = modal.App("583_proj_training", image=image)
 
@@ -42,7 +42,7 @@ def ppo_training_sb(checkpoint_name="basic_model.pth"):
         reward_space="IrInstructionCountOz"
     )
     # line added to implement custom reward
-    env = RuntimeImprovementWrapper(env)
+    env = RuntimeInstCountRewardWrapper(env)
     # seed = 42
     # env.action_space.seed(seed)
     env.runtime_observation_count = 1
@@ -92,7 +92,7 @@ def env_creator(*args, **kwargs):
         reward_space="IrInstructionCountOz"
     )
     # line added to implement custom reward
-    env = RuntimeImprovementWrapper(env)
+    env = RuntimeInstCountRewardWrapper(env)
     # env = EnvCompatibility(env)
     # seed = 42
     # env.action_space.seed(seed)
@@ -208,7 +208,7 @@ def main():
         reward_space="IrInstructionCountOz"
     )
     # line added to implement custom reward
-    env = RuntimeImprovementWrapper(env)
+    env = RuntimeInstCountRewardWrapper(env)
     # seed = 42
     # env.action_space.seed(seed)
     env.runtime_observation_count = 1
