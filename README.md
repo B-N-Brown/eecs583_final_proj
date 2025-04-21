@@ -19,6 +19,11 @@ Also gotta change line 227 of env/lib/python3.11/site-packages/shimmy/openai_gym
 self.gym_env.action_space.seed(seed)
 
 
+Also gotta change line 42 in env/lib/python../site-packages/compiler_gym/wrappers/core.py to 
+
+return self.env.step(action)
+
+
 ## Run
 python3 test_model.py
 
