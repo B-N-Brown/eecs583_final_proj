@@ -15,10 +15,12 @@ from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.evaluation import evaluate_policy
 from stable_baselines3.common.env_util import make_vec_env
 
+from collections import Counter
+
 from loop_actions import loop_opt_actions, loop_action_space
 
 
-MAX_INFERENCE_ITERS = 20 
+MAX_INFERENCE_ITERS = 6 
 
 
 def test_model(env, checkpoint_name="basic_model.pth"):
@@ -41,9 +43,15 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
     total_rewards = []
     initial_execution_times = []
     final_execution_times = []
+
+    initial_instruction_counts = []
+    final_instruction_counts = []
+
     prediction_times = []
     reward_ratios = []
     action_selection_freq = {} 
+
+    action_time_histogram = [[] for _ in range(MAX_INFERENCE_ITERS+1)]
 
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
                      print_system_info=True) 
@@ -59,6 +67,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
         # Getting baseline (initial) run
         observation, reward, done, info = env.step([])
         initial_execution_times.append(env.reward.spaces['runtime'].previous_runtime)
+        initial_instruction_counts.append(env.reward.spaces['runtime'].previous_inst_count)
 
         with tqdm(desc="Processing") as pbar:
             tqdm_counter = 0
@@ -74,7 +83,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
                 #print("SAMPLD ACTION:", env.action_space.to_string(action))
 
                 # action = env.action_space.sample()
-                # print("ACTION:", action)
+                print("ACTION:", action)
 
                 observation, reward, done, info = env.step(action)
 
@@ -89,6 +98,8 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
 
                     else:
                         action_selection_freq[env.action_space.to_string(action)] += 1
+                
+                action_time_histogram[tqdm_counter].append(env.action_space.to_string(action))
 
                 total_reward += reward
                     
@@ -102,6 +113,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
         prediction_times.append(env.episode_walltime)
         # reward_ratios.append(env.reward_ratio)
         final_execution_times.append(env.reward.spaces['runtime'].previous_runtime)
+        final_instruction_counts.append(env.reward.spaces['runtime'].previous_inst_count)
 
 
     # Plotting all the results
@@ -111,7 +123,10 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
         reward_ratios, 
         final_execution_times, 
         initial_execution_times,
+        final_instruction_counts,
+        initial_instruction_counts,
         action_selection_freq,
+        action_time_histogram,
         fig_sub_dir
     )
 
@@ -122,8 +137,11 @@ def data_vis(
         reward_ratios, 
         final_execution_times, 
         initial_execution_times,
+        final_instruction_counts,
+        initial_instruction_counts,
         action_selection_freq,
-        fig_sub_dir="basic_figs"
+        action_time_histogram,
+        fig_sub_dir="new_metrics"
 ) -> None:
     assert(len(final_execution_times) > 0)
 
@@ -166,6 +184,22 @@ def data_vis(
     plt.savefig(f"figs/{fig_sub_dir}/exec_time_diff.png")
     fig.clf()
 
+    fig, ax = plt.subplots()
+    ax.plot(final_instruction_counts, "*", c="b", label="Final")
+    ax.plot(initial_instruction_counts, "+", c="r", label="Initial")
+    ax.set_title("Instruction count before/after optimization")
+    ax.legend()
+    plt.savefig(f"figs/{fig_sub_dir}/inst_count.png")
+    fig.clf()
+
+    fig, ax = plt.subplots()
+    ax.plot(np.array(initial_instruction_counts) - np.array(final_instruction_counts), "*", c="b", label="Final")
+    # ax.scatter(initial_execution_times, "+", c="r", label="Initial")
+    ax.set_title("Instruction count before/after optimization (difference)")
+    ax.legend()
+    plt.savefig(f"figs/{fig_sub_dir}/inst_count_diff.png")
+    fig.clf()
+
 
     fig, ax = plt.subplots()
     bins = action_selection_freq.keys()
@@ -173,6 +207,22 @@ def data_vis(
     plt.title("Instruction selection frequencies")
     plt.bar(bins, freqs)
     plt.savefig(f"figs/{fig_sub_dir}/instr_hist.png")
+
+    all_actions = sorted({action for timestep in action_time_histogram for action in timestep})
+    for timestep_index, actions in enumerate(action_time_histogram):
+        counts = Counter(actions)
+        frequencies = [counts.get(action, 0) for action in all_actions]
+        
+        plt.figure(figsize=(6, 4))
+        plt.bar(all_actions, frequencies, tick_label=all_actions)
+        plt.title(f"Action Frequencies at Timestep {timestep_index}")
+        plt.xlabel("Action")
+        plt.ylabel("Frequency")
+        plt.xticks(rotation=45) 
+        plt.ylim(0, max(frequencies) + 1)
+        plt.grid(axis='y', linestyle='--', alpha=0.7)
+        plt.tight_layout()
+        plt.savefig(f"figs/{fig_sub_dir}/instr_hist_{timestep_index}.png")
 
 
 def main():

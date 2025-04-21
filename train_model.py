@@ -11,9 +11,10 @@ TODO List:
     * Finetune ppo params (how tf does this work?)
 """
 import torch
+import os
 import compiler_gym
 from compiler_gym.wrappers import CycleOverBenchmarks, IterateOverBenchmarks, ConstrainedCommandline
-# from stable_baselines3.common.logger import configure
+from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback, CallbackList
 
 from stable_baselines3 import PPO, A2C
 from stable_baselines3.common.env_util import make_vec_env
@@ -32,7 +33,7 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
 
     # Create vectorized env (recommended for SB3)
     vec_env = make_vec_env(lambda: env, n_envs=n_envs)
-    
+   
     model = PPO(
         "MlpPolicy", 
         vec_env, 
@@ -44,10 +45,31 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         normalize_advantage=True,
         seed=42,
         device=device,
-        tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
+        #tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
+    )
+    
+    checkpoint_dir = "johns_checkpoints"
+    os.makedirs(checkpoint_dir, exist_ok=True)
+    checkpoint_callback = CheckpointCallback(
+        save_freq=1 ,   # save every 50k env‑steps total
+        save_path=checkpoint_dir,
+        name_prefix="ppo_compilergym"
     )
 
-    model.learn(total_timesteps=total_timesteps, progress_bar=True)
+    # (Optional) also evaluate periodically and save the best model
+    eval_callback = EvalCallback(
+        env, 
+        best_model_save_path="johns_checkpoints",
+        log_path="./logs/results/",
+        eval_freq=1,
+        deterministic=True,
+        render=False
+    )
+
+    # 4) Combine callbacks and start learning
+    callbacks = CallbackList([checkpoint_callback, eval_callback])
+
+    model.learn(total_timesteps=10, callback=callbacks, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 def a2c_training_sb(env, checkpoint_name="basic_model.pth"):
