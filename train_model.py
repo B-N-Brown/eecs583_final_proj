@@ -27,7 +27,7 @@ from dataset_wrapper import CBenchWrapper
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     n_steps = 30 
-    n_envs = 1
+    n_envs = 2
     total_timesteps = n_steps * n_envs # PPO training min
     total_timesteps *= 16 # Total number of rollouts
 
@@ -38,39 +38,28 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         "MlpPolicy", 
         vec_env, 
         verbose=2, 
-        batch_size=256,
-        n_steps=2048,
-        n_epochs=50,
+        batch_size=512,
+        n_steps=1024,
+        n_epochs=10,
         ent_coef=1e-1,
         learning_rate=1e-4,
         normalize_advantage=True,
         seed=42,
         device=device,
-        #tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
+        tensorboard_log="/mnt/c/Users/User/Documents/Projects/eecs583_final_proj/tensor_boards"
     )
     
     checkpoint_dir = "johns_checkpoints"
     os.makedirs(checkpoint_dir, exist_ok=True)
     checkpoint_callback = CheckpointCallback(
-        save_freq=1 ,   # save every 50k env‑steps total
+        save_freq=1000 ,   # save every 50k env‑steps total
         save_path=checkpoint_dir,
         name_prefix="ppo_compilergym"
     )
-
-    # (Optional) also evaluate periodically and save the best model
-    eval_callback = EvalCallback(
-        env, 
-        best_model_save_path="johns_checkpoints",
-        log_path="./logs/results/",
-        eval_freq=1,
-        deterministic=True,
-        render=False
-    )
-
     # 4) Combine callbacks and start learning
-    callbacks = CallbackList([checkpoint_callback, eval_callback])
+    callbacks = CallbackList([checkpoint_callback])
 
-    model.learn(total_timesteps=10, callback=callbacks, progress_bar=True)
+    model.learn(total_timesteps=50000, callback=callbacks, progress_bar=True)
     model.save(path=f"model_checkpoints/{checkpoint_name}")
 
 def a2c_training_sb(env, checkpoint_name="basic_model.pth"):
