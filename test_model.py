@@ -285,7 +285,7 @@ def data_vis(
 def main():
     env = compiler_gym.make(
         "llvm-v0",
-        benchmark="cbench-v1/qsort", # TODO: find a good benchmark
+        benchmark="anghabench-v1/", # TODO: find a good benchmark
         observation_space="Autophase", # TODO: consider using a different observation space that maybe isn't as broad?
         reward_space="IrInstructionCountOz"
     )

@@ -94,9 +94,10 @@ def main():
     env = compiler_gym.make(
         "llvm-v0",
         observation_space="Autophase",
-        reward_space="IrInstructionCountOz"
+        reward_space="IrInstructionCountOz",
+        benchmark='anghabench-v1'
     )
-    runnable_benchmarks = ['benchmark://cbench-v1/bitcount', 'benchmark://cbench-v1/blowfish', 'benchmark://cbench-v1/bzip2', 'benchmark://cbench-v1/crc32', 'benchmark://cbench-v1/dijkstra', 'benchmark://cbench-v1/gsm', 'benchmark://cbench-v1/jpeg-c', 'benchmark://cbench-v1/jpeg-d', 'benchmark://cbench-v1/patricia', 'benchmark://cbench-v1/qsort', 'benchmark://cbench-v1/sha', 'benchmark://cbench-v1/stringsearch', 'benchmark://cbench-v1/stringsearch2', 'benchmark://cbench-v1/susan', 'benchmark://cbench-v1/tiff2bw', 'benchmark://cbench-v1/tiff2rgba', 'benchmark://cbench-v1/tiffdither', 'benchmark://cbench-v1/tiffmedian']
+    # runnable_benchmarks = ['benchmark://cbench-v1/bitcount', 'benchmark://cbench-v1/blowfish', 'benchmark://cbench-v1/bzip2', 'benchmark://cbench-v1/crc32', 'benchmark://cbench-v1/dijkstra', 'benchmark://cbench-v1/gsm', 'benchmark://cbench-v1/jpeg-c', 'benchmark://cbench-v1/jpeg-d', 'benchmark://cbench-v1/patricia', 'benchmark://cbench-v1/qsort', 'benchmark://cbench-v1/sha', 'benchmark://cbench-v1/stringsearch', 'benchmark://cbench-v1/stringsearch2', 'benchmark://cbench-v1/susan', 'benchmark://cbench-v1/tiff2bw', 'benchmark://cbench-v1/tiff2rgba', 'benchmark://cbench-v1/tiffdither', 'benchmark://cbench-v1/tiffmedian']
     # runnable_benchmarks = []
     if len(runnable_benchmarks) == 0:
         for benchmark in dataset.benchmark_uris():
