@@ -68,7 +68,7 @@ class RuntimeInstCountReward(Reward):
         observation_view,
     ) -> float:
         
-        alpha = 0.5
+        alpha = 0.80 
 
         del actions  # unused
         runtimes = observations[0]
@@ -81,6 +81,10 @@ class RuntimeInstCountReward(Reward):
 
         runtime_reward = self.previous_runtime - runtime
         inst_count_reward = self.previous_inst_count - inst_count
+
+        # print("RUINTIME REWARD:", runtime_reward)
+        # print("inst REWARD:", inst_count_reward)
+        runtime_reward *= 1000
 
         self.previous_runtime = runtime
         self.previous_inst_count = inst_count

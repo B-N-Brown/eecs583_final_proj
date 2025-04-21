@@ -38,7 +38,6 @@ def test_model(env, checkpoint_name="basic_model.pth"):
     print("Averaged reward:", averaged_reward)
 
 def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_figs"):
-    # benchmarks = env.datasets["cbench-v1/sha"].benchmarks # TODO: choose a benchmark that actually has loops
     total_rewards = []
     initial_execution_times = []
     final_execution_times = []
@@ -46,11 +45,10 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
     reward_ratios = []
     action_selection_freq = {} 
 
-    # TODO: how to tune model architecture for PPO?
     model = PPO.load(f"model_checkpoints/{checkpoint_name}", 
-                     print_system_info=True) # TODO: consider using something other than PPO? 
+                     print_system_info=True) 
 
-    n_episodes = 25 # TODO: Hyperparameter tuning
+    n_episodes = 25 
     done = False
 
     for episode in tqdm(range(n_episodes)):
@@ -199,8 +197,8 @@ def main():
     # test_model_loop(env, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_rewardfix.pth", 
     #                 fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_rewardfix")
     
-    test_model_loop(env, checkpoint_name="mlp_cbench_26rollout_30steps_20batch_lr_0002_rewardfix.pth", 
-                    fig_sub_dir="mlp_cbench_26rollout_30steps_20batch_lr_0001_rewardfix.pth")
+    test_model_loop(env, checkpoint_name="test.pth", 
+                    fig_sub_dir="test.pth")
 
 
 
