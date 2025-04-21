@@ -85,7 +85,7 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
                 #print("SAMPLD ACTION:", env.action_space.to_string(action))
 
                 # action = env.action_space.sample()
-                # print("ACTION:", action)
+                print("ACTION:", action)
 
                 observation, reward, done, info = env.step(action)
 

@@ -26,9 +26,9 @@ from dataset_wrapper import CBenchWrapper
 # STABLE BASELINES TRAINING REGIMES
 def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
     n_steps = 30 
-    n_envs = 2 
+    n_envs = 2
     total_timesteps = n_steps * n_envs # PPO training min
-    total_timesteps *= 32 # Total number of rollouts
+    total_timesteps *= 16 # Total number of rollouts
 
     # Create vectorized env (recommended for SB3)
     vec_env = make_vec_env(lambda: env, n_envs=n_envs)
@@ -37,14 +37,15 @@ def ppo_training_sb(env, device, checkpoint_name="basic_model.pth"):
         "MlpPolicy", 
         vec_env, 
         verbose=2, 
-        batch_size=20,
+        batch_size=256,
         n_steps=n_steps,
-        n_epochs=20,
-        learning_rate=0.0001,
+        n_epochs=50,
+        ent_coef=1e-1,
+        learning_rate=1e-4,
         normalize_advantage=True,
         seed=42,
         device=device,
-        tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
+        #tensorboard_log="/home/bnb/Documents/uofm/eecs583/final_proj/tensor_boards"
     )
 
     model.learn(total_timesteps=total_timesteps, progress_bar=True)
