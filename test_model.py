@@ -98,8 +98,8 @@ def test_model_loop(env, checkpoint_name="basic_model.pth", fig_sub_dir="basic_f
                 #print("SAMPLD ACTION:", env.action_space.to_string(action))
 
                 # #action = env.action_space.sample()
-                # print("ACTION:", action)
-                # print("name:", env.action_space.to_string(action))
+                print("ACTION:", action)
+                print("name:", env.action_space.to_string(action))
 
                 observation, reward, done, info = env.step(action)
 
@@ -285,10 +285,14 @@ def data_vis(
 def main():
     env = compiler_gym.make(
         "llvm-v0",
-        benchmark="anghabench-v1/", # TODO: find a good benchmark
+        benchmark="cbench-v1/sha", 
         observation_space="Autophase", # TODO: consider using a different observation space that maybe isn't as broad?
         reward_space="IrInstructionCountOz"
     )
+
+    # dataset = env.datasets["anghabench-v1"]
+    # for benchmark in dataset.benchmark_uris():
+    #     print(benchmark)
 
     #runnable_benchmarks = ['benchmark://cbench-v1/bitcount', 'benchmark://cbench-v1/crc32', 'benchmark://cbench-v1/dijkstra', 'benchmark://cbench-v1/gsm', 'benchmark://cbench-v1/jpeg-c', 'benchmark://cbench-v1/jpeg-d', 'benchmark://cbench-v1/patricia', 'benchmark://cbench-v1/qsort', 'benchmark://cbench-v1/sha', 'benchmark://cbench-v1/stringsearch', 'benchmark://cbench-v1/stringsearch2', 'benchmark://cbench-v1/susan', 'benchmark://cbench-v1/tiff2bw', 'benchmark://cbench-v1/tiff2rgba', 'benchmark://cbench-v1/tiffdither', 'benchmark://cbench-v1/tiffmedian']
     #'benchmark://cbench-v1/bzip2', 'benchmark://cbench-v1/blowfish', 
